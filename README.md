@@ -45,6 +45,11 @@ The % stays on screen and in the history (e.g. `100−6% = 94`).
 - Tape grouped by date; tap a past answer to reuse it
 - Full Screen history view (the pill appears while you scroll)
 - 🗑 tap clears the number and history; **long-press 🗑** brings the last cleared history back
+  (the history fades back in and the 🗑 key flashes brighter; no vibration on a long press)
+
+### Keeps your sum
+The sum you are typing is saved as you go. If the app is closed by accident, it is back on screen
+when you reopen it, ready to continue. It is not added to the history. AC clears it, and an Error is not kept.
 
 ### Settings (≡)
 - History on/off
@@ -53,9 +58,16 @@ The % stays on screen and in the history (e.g. `100−6% = 94`).
 - Appearance: Light, Dark or Follow System
 - Theme: Classic, Sakura, Lavender, Navy or Forest (each has a light and a dark version)
 
+Follow System on a home screen app only switches after the app is fully closed and reopened
+(an iOS bug); in Safari it switches straight away. The home screen icon stays the same for every theme.
+
 ## Privacy
 
-History and settings are saved only on your phone (browser storage). Nothing is sent anywhere.
+History, settings and the sum you are typing are saved only on your phone (browser storage). Nothing is sent anywhere.
+
+## What's new
+
+See [CHANGELOG.md](CHANGELOG.md).
 
 ## Project files
 
@@ -71,7 +83,7 @@ No build step and no libraries — it is plain HTML, CSS and JavaScript.
 ## Making changes
 
 1. Edit the files and push to `main`. GitHub Pages serves the repo root.
-2. **Bump `CACHE` in `sw.js`** (e.g. `calc-v19` → `calc-v20`) on every push that changes the app.
+2. **Bump `CACHE` in `sw.js`** (e.g. `calc-v26` → `calc-v27`), and add a line to `CHANGELOG.md` on every push that changes the app.
    Phones show the new version on the **second** open after the push (the first open quietly downloads it).
 
 To test on a computer, serve the folder locally (a service worker needs http, not `file://`):
@@ -88,6 +100,20 @@ python3 -m http.server 8000
 - Haptics: iOS blocks vibration started from code, so each key has an invisible
   `<input type="checkbox" switch>` the finger flips for real. A long press never ticks.
 - Keys act on `pointerdown` (fast taps were dropped with `click`); 🗑, ≡ and ⠿ act on release.
+- History must open at the newest line: iOS settles the home screen layout after first paint, so a
+  `ResizeObserver` on the tape (plus `pageshow`) scrolls to the bottom again whenever its size changes.
+- Setting `scrollTop` doesn't stop a flick that is still gliding. Every jump to the newest line goes
+  through `toBottom()`, which briefly sets `overflow-y:hidden` to kill the momentum, then restores it.
+
+### How themes work
+- Saved in `calc-settings` as `theme` + `mode`. The page sets `data-theme="<theme>-<light|dark>"` on `<html>`.
+- Theme CSS only swaps variables on `:root[data-theme=…]`. Keep it scoped to `:root` — the theme
+  buttons in Settings also carry `data-theme`. `classic-dark` has no rule: it is the default look.
+- A small script in `<head>` applies the saved theme before first paint (no colour flash) and
+  defines `OLD_THEMES`, `lightMode` and `themeAttr()`, which the main script reuses.
+- `OLD_THEMES` maps older saved theme names (auto, blush, slate, peach, carbon, …) to a current
+  theme + mode, so phones that saved an old choice still get a matching look. Don't remove it.
+- The `theme-color` and `color-scheme` meta tags are read from the applied CSS (`--bg`, `color-scheme`).
 
 ## License
 
