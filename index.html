@@ -503,13 +503,13 @@ function clearHistory() {
   renderTape();
 }
 function recoverHistory() {
-  if (!trash.length) return false;
+  if (!trash.length) return;
   history = trash.concat(history).slice(-500);
   trash = [];
   store.set('calc-history', history);
   store.set('calc-trash', trash);
   renderTape();
-  return true;
+  tapeEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 450, easing: 'ease-out' }); // visual "it worked"
 }
 
 // Tap a past result to use it (or the recover hint)
@@ -655,20 +655,12 @@ $('dpList').addEventListener('click', e => {
 });
 
 // Long press the trash key to recover the last cleared history
-// iPhone: the tick plays when the finger lifts (the switch flips). Only let it
-// tick if something was recovered; otherwise mute this key's switch until next press.
 const trashBtn = document.querySelector('[data-k="clear"]').parentElement;
-const trashTick = trashBtn.querySelector('.tick');
 let pressTimer = 0, longFired = false;
 trashBtn.addEventListener('pointerdown', () => {
   longFired = false;
-  if (settings.haptics) trashTick.setAttribute('switch', '');
   clearTimeout(pressTimer);
-  pressTimer = setTimeout(() => {
-    longFired = true;
-    if (recoverHistory()) haptic(); // haptic() = Android buzz right away
-    else trashTick.removeAttribute('switch');
-  }, 500);
+  pressTimer = setTimeout(() => { longFired = true; recoverHistory(); }, 500);
 });
 ['pointerup', 'pointerleave', 'pointercancel'].forEach(t =>
   trashBtn.addEventListener(t, () => clearTimeout(pressTimer)));
