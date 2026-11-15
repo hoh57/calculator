@@ -177,6 +177,9 @@ let error = false;
 
 const isOp = t => OPS.includes(t);
 const last = () => tokens[tokens.length - 1];
+// A "%" typed straight after an operator (5−%6) sits in front of its number
+const preEnd = a => a.at(-1) === '%' && (a.length < 2 || isOp(a.at(-2)) || isOpen(a.at(-2)));
+const dangling = a => isOp(a.at(-1)) || isOpen(a.at(-1)) || preEnd(a);
 const clean = n => { const r = parseFloat(n.toPrecision(15)); return Object.is(r, -0) ? 0 : r; };
 const toStr = n => String(clean(n));
 const isLit = t => /^-?[\d.]/.test(t);           // a typed number or an answer
@@ -228,26 +231,43 @@ const exprText = toks => toks.map(fmtTok).join('');
 // A number next to a bracket or function multiplies (2π, 2(3+4)). Missing ")" are closed. No eval().
 function evaluate(toks) {
   toks = toks.slice();
-  while (toks.length && (isOp(toks.at(-1)) || isOpen(toks.at(-1)))) toks.pop();
+  while (toks.length && dangling(toks)) toks.pop();
   if (!toks.length) return NaN;
-  let i = 0;
+  let i = 0, pct = false; // pct: the term just read was a lone "b%"
   const peek = () => toks[i];
   const expr = () => {
     let v = term();
-    while (peek() === '+' || peek() === '−') { const o = toks[i++], r = term(); v = o === '+' ? v + r : v - r; }
+    while (peek() === '+' || peek() === '−') {
+      const o = toks[i++];
+      let r = term();
+      if (pct) r *= v; // a ± b% → a ± (b% of a)
+      v = o === '+' ? v + r : v - r;
+    }
     return v;
   };
   const term = () => {
-    let v = power();
+    pct = false;
+    let v = power(), lone = pct;
     for (;;) {
       const t = peek();
-      if (t === '×' || t === '÷') { i++; const r = power(); v = t === '×' ? v * r : r === 0 ? NaN : v / r; }
-      else if (isNum(t) || isOpen(t)) v *= power();
-      else return v;
+      if (t === '×' || t === '÷') { i++; lone = false; const r = power(); v = t === '×' ? v * r : r === 0 ? NaN : v / r; }
+      else if (isNum(t) || isOpen(t) || t === '%') { lone = false; v *= power(); }
+      else { pct = lone; return v; }
     }
   };
-  const power = () => { const b = post(), f = POW[peek()]; if (!f) return b; i++; return f(b, power()); };
-  const post = () => { let v = prim(); while (POST[peek()]) v = POST[toks[i++]](v); return v; };
+  const power = () => { const b = post(), f = POW[peek()]; if (!f) return b; i++; const v = f(b, power()); pct = false; return v; };
+  const post = () => { // "%6" or "6%" = 6 ÷ 100
+    let p = peek() === '%';
+    if (p) i++;
+    let v = prim();
+    for (;;) {
+      if (POST[peek()]) v = POST[toks[i++]](v);
+      else if (peek() === '%' && !p) { i++; p = true; }
+      else break;
+    }
+    pct = p;
+    return p ? v / 100 : v;
+  };
   const prim = () => {
     const t = toks[i++];
     if (isNum(t)) return numVal(t);
@@ -263,7 +283,7 @@ function resetIfError() { if (error) { error = false; tokens = []; } }
 // Where the last number or bracket group starts (-1 if the expression ends in an operator)
 function operandStart() {
   let j = tokens.length - 1;
-  while (j >= 0 && POST[tokens[j]]) j--;
+  while (j >= 0 && (POST[tokens[j]] || (tokens[j] === '%' && j > 0 && !preEnd(tokens.slice(0, j + 1))))) j--;
   if (j < 0) return -1;
   if (isNum(tokens[j])) return j;
   if (tokens[j] !== ')') return -1;
@@ -330,6 +350,7 @@ function op(o) {
   resetIfError();
   fresh = false;
   if (!tokens.length) tokens.push('0');
+  if (preEnd(tokens)) tokens.pop();
   if (isOpen(last())) { if (o === '−') { tokens.push('-0'); render(); } return; }
   if (isOp(last())) tokens[tokens.length - 1] = o;
   else {
@@ -347,13 +368,15 @@ function negate() {
   render();
 }
 
-// a + b% → b% of a (like iOS). Otherwise b ÷ 100.
+// % stays on screen like Calculator+: 100−6% or 100−%6 = 94 (b% of a for + −), 200×10% = 20, 6% = 0.06
 function percent() {
-  if (error || !isLit(last())) return;
-  const i = tokens.length - 1, cur = parseFloat(tokens[i]), p = tokens[i - 1];
-  const v = (p === '+' || p === '−') ? evaluate(tokens.slice(0, i - 1)) * cur / 100 : cur / 100;
-  tokens[i] = toStr(v);
-  fresh = true;
+  if (error || !tokens.length || last() === '%') return;
+  if (!isOp(last()) && !isOpen(last())) {
+    const s = operandStart();
+    if (s < 0 || tokens[s - 1] === '%') return; // already "%6"
+  }
+  tokens.push('%');
+  fresh = false;
   render();
 }
 
@@ -372,7 +395,7 @@ function back() {
 
 function equals() {
   if (error || !tokens.length) return;
-  while (tokens.length && (isOp(last()) || isOpen(last()))) tokens.pop();
+  while (tokens.length && dangling(tokens)) tokens.pop();
   if (!needsCalc()) return render();
   for (let n = tokens.filter(isOpen).length - tokens.filter(t => t === ')').length; n > 0; n--) tokens.push(')');
   const v = evaluate(tokens);
