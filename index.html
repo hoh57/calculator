@@ -33,6 +33,19 @@ body{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-
 .app.full .keys,.app.full .preview,.app.full .main{display:none}
 .app.full .tape{flex:1;display:flex;flex-direction:column}
 .app.full .tape>:first-child{margin-top:auto}
+#settings{margin:0;padding:0;border:0;width:100%;height:100%;max-width:none;max-height:none;background:#000;color:var(--txt)}
+#settings .view{min-height:100%;padding-bottom:env(safe-area-inset-bottom)}
+#settings header{display:grid;grid-template-columns:52px 1fr 52px;align-items:center;padding:10px 14px;background:#232323}
+#settings h2{text-align:center;font-size:19px;font-weight:600}
+.hbtn{width:44px;height:44px;border:0;border-radius:50%;background:#3a3a3c;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.hbtn.ok{background:var(--op);justify-self:end}
+.hbtn svg,.row svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.group{margin-top:30px;background:#1a1a1a}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:52px;padding:0 16px;border:0;border-bottom:1px solid #2a2a2a;background:none;color:var(--txt);font-size:18px;font-family:inherit;text-align:left;cursor:pointer}
+.row:last-child{border-bottom:0}
+.row .val{display:flex;align-items:center;gap:4px;color:var(--muted)}
+.row input[switch]{margin:0;accent-color:#34c759}
+#settings :focus-visible{outline:3px solid #5ac8fa;outline-offset:-3px}
 .empty{color:var(--muted);font-size:16px;padding:12px 0}
 .recover{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:none;border:0;color:var(--muted);font-size:clamp(17px,5vw,22px);font-family:inherit;padding:12px 0;cursor:pointer}
 .recover svg{width:1.1em;height:1.1em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -75,7 +88,7 @@ body{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-
     <button class="k n" data-k="8">8</button>
     <button class="k n" data-k="9">9</button>
     <button class="k o" data-k="÷" aria-label="Divide">÷</button>
-    <button class="k" data-k="hist" id="histBtn" aria-label="Show history" aria-pressed="true"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg></button>
+    <button class="k" data-k="settings" aria-label="Settings"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg></button>
 
     <button class="k n" data-k="4">4</button>
     <button class="k n" data-k="5">5</button>
@@ -94,6 +107,22 @@ body{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-
   </div>
 </div>
 
+<dialog id="settings" aria-labelledby="setTitle">
+  <div class="view" id="setMain">
+    <header><span></span><h2 id="setTitle">Settings</h2><button type="button" class="hbtn ok" id="setDone" aria-label="Done"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg></button></header>
+    <div class="group">
+      <label class="row">History <input type="checkbox" switch id="optTape"></label>
+      <label class="row">Keyboard Vibration <input type="checkbox" switch id="optHaptics"></label>
+    </div>
+    <div class="group">
+      <button type="button" class="row" id="openDp" aria-describedby="dpVal">Decimal Places <span class="val"><span id="dpVal">Unlimited</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button>
+    </div>
+  </div>
+  <div class="view" id="setDp" hidden>
+    <header><button type="button" class="hbtn" id="dpBack" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><h2>Decimal Places</h2><span></span></header>
+    <div class="group" id="dpList" role="radiogroup" aria-label="Decimal places"></div>
+  </div>
+</dialog>
 
 <script>
 const OPS = ['+', '−', '×', '÷'];
@@ -111,6 +140,18 @@ const isEntry = h => h && typeof h.e === 'string' && typeof h.r === 'string'
 const loadList = k => { const v = store.get(k, []); return Array.isArray(v) ? v.filter(isEntry) : []; };
 let history = loadList('calc-history');
 let trash = loadList('calc-trash'); // last cleared history, so it can be recovered
+const DPS = ['auto', '0', '1', '2', '3', '4', '5'];
+const saved = store.get('calc-settings', {}) || {};
+const settings = {
+  haptics: saved.haptics !== false,
+  dp: DPS.includes(saved.dp) ? saved.dp : 'auto'
+};
+// Answer as text, rounded to the chosen decimal places
+function result(v) {
+  if (settings.dp === 'auto') return toStr(v);
+  const s = clean(v).toFixed(+settings.dp);
+  return /^-0(\.0+)?$/.test(s) ? s.slice(1) : s;
+}
 
 let tokens = [];   // e.g. ['12.5', '+', '3']
 let fresh = false; // last number is a result: typing a digit replaces it
@@ -210,7 +251,7 @@ function equals() {
   if (!tokens.some(isOp)) return render();
   const v = evaluate(tokens);
   if (!isFinite(v)) { error = true; tokens = []; fresh = false; return render(); }
-  const r = toStr(v);
+  const r = result(v);
   history.push({ e: exprText(tokens), r, t: Date.now() });
   if (history.length > 500) history = history.slice(-500);
   store.set('calc-history', history);
@@ -239,7 +280,7 @@ function render() {
   let pv = '';
   if (!error && tokens.some(isOp)) {
     const v = evaluate(tokens);
-    if (isFinite(v)) pv = '= ' + fmtTok(toStr(v));
+    if (isFinite(v)) pv = '= ' + fmtTok(result(v));
   }
   prevEl.textContent = pv;
   fit();
@@ -343,12 +384,11 @@ const actions = {
   ac() { tokens = []; fresh = false; error = false; render(); },
   neg: negate, pct: percent, back, eq: equals,
   clear() { this.ac(); clearHistory(); },
-  hist() { setTape(tapeEl.hidden); store.set('calc-tape', !tapeEl.hidden); }
+  settings: openSettings,
 };
 
 function setTape(show) {
   tapeEl.hidden = !show;
-  $('histBtn').setAttribute('aria-pressed', String(show));
   syncFs();
 }
 
@@ -369,7 +409,60 @@ keysEl.querySelectorAll(':scope > .k').forEach(b => {
   cell.append(b, t);
 });
 document.addEventListener('touchstart', () => {}, { passive: true }); // lets :active show on iPhone
+const ON_RELEASE = ['clear', 'settings'];
 const keyOf = el => el.closest('.cell')?.querySelector('.k')?.dataset.k;
+
+// ---- Settings page ----
+const setDlg = $('settings');
+const dpLabel = v => v === 'auto' ? 'Unlimited' : v;
+function showView(dp) {
+  $('setMain').hidden = dp;
+  $('setDp').hidden = !dp;
+  (dp ? $('dpList').querySelector('[aria-checked="true"]') : $('openDp')).focus();
+}
+function renderDp() {
+  $('dpVal').textContent = dpLabel(settings.dp);
+  $('dpList').textContent = '';
+  DPS.forEach(v => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'row';
+    b.setAttribute('role', 'radio');
+    b.setAttribute('aria-checked', String(v === settings.dp));
+    b.dataset.dp = v;
+    b.append(dpLabel(v));
+    if (v === settings.dp) b.insertAdjacentHTML('beforeend', '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>');
+    $('dpList').append(b);
+  });
+}
+function openSettings() {
+  $('optTape').checked = !tapeEl.hidden;
+  $('optHaptics').checked = settings.haptics;
+  renderDp();
+  $('setMain').hidden = false;
+  $('setDp').hidden = true;
+  setDlg.showModal();
+}
+function applyHaptics() {
+  keysEl.querySelectorAll('.tick').forEach(t =>
+    settings.haptics ? t.setAttribute('switch', '') : t.removeAttribute('switch'));
+}
+applyHaptics();
+const saveSettings = () => store.set('calc-settings', settings);
+$('optTape').addEventListener('change', e => { setTape(e.target.checked); store.set('calc-tape', e.target.checked); });
+$('optHaptics').addEventListener('change', e => { settings.haptics = e.target.checked; saveSettings(); applyHaptics(); });
+$('setDone').addEventListener('click', () => setDlg.close());
+$('openDp').addEventListener('click', () => showView(true));
+$('dpBack').addEventListener('click', () => showView(false));
+$('dpList').addEventListener('click', e => {
+  const b = e.target.closest('[data-dp]');
+  if (!b || !DPS.includes(b.dataset.dp)) return;
+  settings.dp = b.dataset.dp;
+  saveSettings();
+  renderDp();
+  render();
+  showView(false);
+});
 
 // Long press the trash key to recover the last cleared history
 const trashBtn = document.querySelector('[data-k="clear"]').parentElement;
@@ -384,7 +477,7 @@ trashBtn.addEventListener('pointerdown', () => {
 trashBtn.addEventListener('contextmenu', e => e.preventDefault());
 
 // Haptic tick where the browser allows it (Android; iPhone web apps can't)
-function haptic() { navigator.vibrate?.(8); }
+function haptic() { if (settings.haptics) navigator.vibrate?.(8); }
 
 function press(k) {
   haptic();
@@ -396,14 +489,15 @@ function press(k) {
 keysEl.addEventListener('pointerdown', e => {
   if (e.pointerType === 'mouse' && e.button !== 0) return;
   const k = keyOf(e.target);
-  if (k && k !== 'clear') press(k);
+  if (k && !ON_RELEASE.includes(k)) press(k);
 });
 keysEl.addEventListener('click', e => {
   const k = keyOf(e.target);
   if (!k) return;
   if (e.target.classList.contains('tick')) {
     e.target.blur();
-    if (k === 'clear') { if (longFired) longFired = false; else press(k); }
+    if (k === 'clear' && longFired) longFired = false;
+    else if (ON_RELEASE.includes(k)) press(k);
     return;
   }
   press(k); // keyboard or screen reader pressing the button itself
@@ -411,7 +505,7 @@ keysEl.addEventListener('click', e => {
 
 // Keyboard support
 addEventListener('keydown', e => {
-  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.ctrlKey || e.metaKey || e.altKey || setDlg.open) return;
   const k = e.key, map = { '*': '×', x: '×', '/': '÷', '-': '−', '+': '+' };
   if (k === 'Enter' && document.activeElement?.matches('button:focus-visible')) return;
   if (appEl.classList.contains('full') && /^[\d.%=+\-*\/x]$|^(Enter|Backspace|Escape|Delete)$/.test(k)) setFull(false);
@@ -427,7 +521,7 @@ addEventListener('keydown', e => {
 
 // Lock the page like a native app: only the history list may scroll
 document.addEventListener('touchmove', e => {
-  if (!e.target.closest('.tape')) e.preventDefault();
+  if (!e.target.closest('.tape, #settings')) e.preventDefault();
 }, { passive: false });
 // No pinch-zoom on iOS
 document.addEventListener('gesturestart', e => e.preventDefault());
