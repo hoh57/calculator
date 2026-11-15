@@ -87,8 +87,12 @@ No build step and no libraries — it is plain HTML, CSS and JavaScript.
 2. On every push that changes the app, pick the new version number (see *Versioning* below) and put it in **three places**:
    - `CACHE` in `sw.js` (e.g. `calc-1.0.0` → `calc-1.1.0`)
    - the **Version** line in Settings (`index.html`)
-   - a new section at the top of `CHANGELOG.md` on every push that changes the app.
+   - a new section at the top of `CHANGELOG.md`
+
    Phones show the new version on the **second** open after the push (the first open quietly downloads it).
+3. After the push, create a GitHub release: **Releases → Draft a new release**, new tag `v1.2.3`
+   (the same number with a `v`), title `1.2.3`, paste that version's CHANGELOG notes, **Publish**.
+   The repo page then shows it as *Latest*.
 
 ### Versioning
 The version has three numbers, **MAJOR.MINOR.PATCH** (e.g. `1.2.3`):
