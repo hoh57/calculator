@@ -1,5 +1,5 @@
 // Show the saved copy instantly, then quietly fetch any update for next time.
-const CACHE = 'calc-v25';
+const CACHE = 'calc-v26';
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {

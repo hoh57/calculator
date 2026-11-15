@@ -50,7 +50,8 @@ The % stays on screen and in the history (e.g. `100−6% = 94`).
 - History on/off
 - Keyboard Vibration on/off
 - Decimal Places: Unlimited, or fixed 0–5 (e.g. `10.00`)
-- Theme: Auto (Classic Light / Classic, Blush / Sakura, or Slate / Navy — follows Light or Dark mode), Classic, Classic Light, Sakura, Lavender, Peach, Blush, Navy, Forest, Carbon or Slate
+- Appearance: Light, Dark or Follow System
+- Theme: Classic, Sakura, Lavender, Navy or Forest (each has a light and a dark version)
 
 ## Privacy
 

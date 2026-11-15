@@ -15,16 +15,16 @@
 <title>Calculator</title>
 <style>
 :root{color-scheme:dark;--bg:#000;--num:#f2f2f2;--ntxt:#000;--fn:#333;--op:#e3923b;--otxt:#fff;--muted:#8e8e93;--txt:#fff;--hist:#e5e5e5;--press:#1c1c1e;--bar:#232323;--grp:#1a1a1a;--line:#2a2a2a;--sci:#2a2a2c;--scion:#636366;--pill:rgba(58,58,60,.92);--on:#34c759}
-/* Themes: each one only swaps the colours above */
-:root[data-theme="sakura"]{--bg:#1c0f16;--num:#ffd6e5;--ntxt:#6a2445;--fn:#4d2a3c;--op:#ff6f9f;--muted:#b896a7;--hist:#f6dce7;--press:#2e1924;--bar:#2c1822;--grp:#24141c;--line:#3b2431;--sci:#3a2230;--scion:#80506a;--pill:rgba(77,42,60,.94);--on:#ff6f9f}
-:root[data-theme="lavender"]{--bg:#15111d;--num:#e9e0fb;--ntxt:#3f2b69;--fn:#3b3252;--op:#ac85ff;--muted:#a69dbf;--hist:#ebe4f8;--press:#231c31;--bar:#251f34;--grp:#1d182a;--line:#332b47;--sci:#2f2843;--scion:#6c5c93;--pill:rgba(59,50,82,.94);--on:#ac85ff}
-:root[data-theme="peach"]{--bg:#1c1412;--num:#fbe0d3;--ntxt:#6b3524;--fn:#4c3631;--op:#f0907a;--muted:#bba095;--hist:#f7e5dd;--press:#2d201d;--bar:#2c201d;--grp:#241a18;--line:#3c2c28;--sci:#3a2a26;--scion:#86605a;--pill:rgba(76,54,49,.94);--on:#f0907a}
+/* Themes: <colour>-<light|dark>; each only swaps the colours above (classic-dark = the defaults) */
+:root[data-theme="sakura-dark"]{--bg:#1c0f16;--num:#ffd6e5;--ntxt:#6a2445;--fn:#4d2a3c;--op:#ff6f9f;--muted:#b896a7;--hist:#f6dce7;--press:#2e1924;--bar:#2c1822;--grp:#24141c;--line:#3b2431;--sci:#3a2230;--scion:#80506a;--pill:rgba(77,42,60,.94);--on:#ff6f9f}
+:root[data-theme="lavender-dark"]{--bg:#15111d;--num:#e9e0fb;--ntxt:#3f2b69;--fn:#3b3252;--op:#ac85ff;--muted:#a69dbf;--hist:#ebe4f8;--press:#231c31;--bar:#251f34;--grp:#1d182a;--line:#332b47;--sci:#2f2843;--scion:#6c5c93;--pill:rgba(59,50,82,.94);--on:#ac85ff}
 :root[data-theme="classic-light"]{color-scheme:light;--bg:#f2f2f7;--num:#fff;--ntxt:#000;--fn:#d4d4d9;--muted:#8e8e93;--txt:#000;--hist:#3a3a3c;--press:#e5e5ea;--bar:#e5e5ea;--grp:#fff;--line:#e5e5ea;--sci:#e5e5ea;--scion:#b8b8bd;--pill:rgba(209,209,214,.96)}
-:root[data-theme="navy"]{--bg:#0b1220;--num:#dbe4f0;--ntxt:#13233d;--fn:#26324a;--op:#3b82f6;--muted:#8a97ab;--hist:#e1e8f2;--press:#151f33;--bar:#162036;--grp:#111a2b;--line:#233049;--sci:#1f2a40;--scion:#4a5a7a;--pill:rgba(38,50,74,.94);--on:#3b82f6}
-:root[data-theme="forest"]{--bg:#0f1510;--num:#dfe6d5;--ntxt:#24331f;--fn:#2f3a2c;--op:#5f8f45;--muted:#97a38f;--hist:#e3e9dc;--press:#1a2219;--bar:#1b241a;--grp:#141c13;--line:#283326;--sci:#232d21;--scion:#52664b;--pill:rgba(47,58,44,.94);--on:#5f8f45}
-:root[data-theme="carbon"]{--bg:#0d0d0d;--num:#3a3a3c;--ntxt:#fff;--fn:#252527;--op:#e04b3a;--sci:#232325;--scion:#5a5a5e;--on:#e04b3a}
-:root[data-theme="slate"]{color-scheme:light;--bg:#eef2f6;--num:#fff;--ntxt:#1e2b3c;--fn:#d5dde7;--op:#2f5d8a;--muted:#7b8a9c;--txt:#1e2b3c;--hist:#2b3a4d;--press:#dde4ec;--bar:#dde4ec;--grp:#fff;--line:#dde4ec;--sci:#dde4ec;--scion:#a9b8c9;--pill:rgba(213,221,231,.96);--on:#2f5d8a}
-:root[data-theme="blush"]{color-scheme:light;--bg:#fff0f5;--num:#fff;--ntxt:#7a2f52;--fn:#ffd3e2;--op:#ff6f9f;--muted:#b67f97;--txt:#4f1f36;--hist:#6d2b4a;--press:#ffe0eb;--bar:#ffdbe7;--grp:#fff;--line:#f6d5e1;--sci:#ffe0eb;--scion:#f7a6c3;--pill:rgba(255,211,226,.96);--on:#ff6f9f}
+:root[data-theme="lavender-light"]{color-scheme:light;--bg:#f5f1fc;--num:#fff;--ntxt:#3f2b69;--fn:#e3d9f7;--op:#9a6cf5;--muted:#9a8db8;--txt:#2e2048;--hist:#3f2f63;--press:#ebe3fa;--bar:#e9e1f8;--grp:#fff;--line:#e6def5;--sci:#ebe3fa;--scion:#c4b1ee;--pill:rgba(227,217,247,.96);--on:#9a6cf5}
+:root[data-theme="forest-light"]{color-scheme:light;--bg:#f1f4ec;--num:#fff;--ntxt:#24331f;--fn:#d9e2cf;--op:#5f8f45;--muted:#86937e;--txt:#1f2b1a;--hist:#2c3a26;--press:#e3eadb;--bar:#e1e8d8;--grp:#fff;--line:#dfe6d6;--sci:#e3eadb;--scion:#b3c6a3;--pill:rgba(217,226,207,.96);--on:#5f8f45}
+:root[data-theme="navy-dark"]{--bg:#0b1220;--num:#dbe4f0;--ntxt:#13233d;--fn:#26324a;--op:#3b82f6;--muted:#8a97ab;--hist:#e1e8f2;--press:#151f33;--bar:#162036;--grp:#111a2b;--line:#233049;--sci:#1f2a40;--scion:#4a5a7a;--pill:rgba(38,50,74,.94);--on:#3b82f6}
+:root[data-theme="forest-dark"]{--bg:#0f1510;--num:#dfe6d5;--ntxt:#24331f;--fn:#2f3a2c;--op:#5f8f45;--muted:#97a38f;--hist:#e3e9dc;--press:#1a2219;--bar:#1b241a;--grp:#141c13;--line:#283326;--sci:#232d21;--scion:#52664b;--pill:rgba(47,58,44,.94);--on:#5f8f45}
+:root[data-theme="navy-light"]{color-scheme:light;--bg:#eef2f6;--num:#fff;--ntxt:#1e2b3c;--fn:#d5dde7;--op:#2f5d8a;--muted:#7b8a9c;--txt:#1e2b3c;--hist:#2b3a4d;--press:#dde4ec;--bar:#dde4ec;--grp:#fff;--line:#dde4ec;--sci:#dde4ec;--scion:#a9b8c9;--pill:rgba(213,221,231,.96);--on:#2f5d8a}
+:root[data-theme="sakura-light"]{color-scheme:light;--bg:#fff0f5;--num:#fff;--ntxt:#7a2f52;--fn:#ffd3e2;--op:#ff6f9f;--muted:#b67f97;--txt:#4f1f36;--hist:#6d2b4a;--press:#ffe0eb;--bar:#ffdbe7;--grp:#fff;--line:#f6d5e1;--sci:#ffe0eb;--scion:#f7a6c3;--pill:rgba(255,211,226,.96);--on:#ff6f9f}
 *{box-sizing:border-box;margin:0}
 html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif}
 body{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-area-inset-top) calc(env(safe-area-inset-right) + 10px) max(12px, calc(env(safe-area-inset-bottom) - 4px)) calc(env(safe-area-inset-left) + 10px);-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
@@ -78,7 +78,6 @@ body{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-
 .cell:active{z-index:2}
 .cell:active .k{transform:scale(1.18);filter:brightness(1.35)}
 .cell:active .n{filter:brightness(.85)}
-[data-theme="carbon"] .cell:active .n{filter:brightness(1.35)}
 .sci{position:absolute;top:0;left:0;right:0;z-index:3;background:var(--bg);display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:44px;gap:8px;padding:6px 0 10px}
 .sci[hidden],.app.full .sci{display:none}
 .s{background:var(--sci);font-size:clamp(14px,4.8vw,20px)}
@@ -94,7 +93,18 @@ body{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-
 .eq{grid-column:5;grid-row:4/6}
 .k svg{width:40%;height:40%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 </style>
-<script>try{let t=JSON.parse(localStorage.getItem('calc-settings')||'{}').theme;const A={'auto-classic':['classic-light','classic'],auto:['blush','sakura'],'auto-men':['slate','navy']}[t];if(A)t=A[matchMedia('(prefers-color-scheme: light)').matches?0:1];if(typeof t==='string')document.documentElement.dataset.theme=t}catch{}</script>
+<script>
+// Theme = colour family, mode = light, dark or follow the phone. Old single-name choices map to [theme, mode].
+const OLD_THEMES = { classic: ['classic', 'dark'], 'classic-light': ['classic', 'light'], 'auto-classic': ['classic', 'system'],
+  auto: ['sakura', 'system'], sakura: ['sakura', 'dark'], blush: ['sakura', 'light'], peach: ['sakura', 'dark'],
+  lavender: ['lavender', 'dark'], navy: ['navy', 'dark'], slate: ['navy', 'light'], 'auto-men': ['navy', 'system'],
+  forest: ['forest', 'dark'], carbon: ['classic', 'dark'] };
+const lightMode = matchMedia('(prefers-color-scheme: light)');
+const themeAttr = (t, m) => t + '-' + (m === 'system' ? (lightMode.matches ? 'light' : 'dark') : m);
+try { const c = JSON.parse(localStorage.getItem('calc-settings') || '{}') || {}; let t = c.theme, m = c.mode;
+  if (!m && OLD_THEMES[t]) [t, m] = OLD_THEMES[t];
+  if (typeof t === 'string' && typeof m === 'string') document.documentElement.dataset.theme = themeAttr(t, m); } catch {}
+</script>
 </head>
 <body>
 <div class="app">
@@ -145,6 +155,7 @@ body{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-
       <label class="row">Keyboard Vibration <input type="checkbox" switch id="optHaptics"></label>
     </div>
     <div class="group">
+      <button type="button" class="row" id="openMode" aria-describedby="modeVal">Appearance <span class="val"><span id="modeVal">Dark</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button>
       <button type="button" class="row" id="openTheme" aria-describedby="themeVal">Theme <span class="val"><span id="themeVal">Classic</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button>
       <button type="button" class="row" id="openDp" aria-describedby="dpVal">Decimal Places <span class="val"><span id="dpVal">Unlimited</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button>
     </div>
@@ -152,6 +163,10 @@ body{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-
   <div class="view" id="setDp" hidden>
     <header><button type="button" class="hbtn" id="dpBack" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><h2>Decimal Places</h2><span></span></header>
     <div class="group" id="dpList" role="radiogroup" aria-label="Decimal places"></div>
+  </div>
+  <div class="view" id="setMode" hidden>
+    <header><button type="button" class="hbtn" id="modeBack" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><h2>Appearance</h2><span></span></header>
+    <div class="group" id="modeList" role="radiogroup" aria-label="Appearance"></div>
   </div>
   <div class="view" id="setTheme" hidden>
     <header><button type="button" class="hbtn" id="themeBack" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><h2>Theme</h2><span></span></header>
@@ -181,7 +196,8 @@ const settings = {
   haptics: saved.haptics !== false,
   dp: DPS.includes(saved.dp) ? saved.dp : 'auto',
   rad: saved.rad === true,
-  theme: 'classic'
+  theme: 'classic',
+  mode: 'dark'
 };
 // Answer as text, rounded to the chosen decimal places
 function result(v) {
@@ -665,12 +681,11 @@ let usingKeyboard = false;
 addEventListener('keydown', () => { usingKeyboard = true; }, true);
 addEventListener('pointerdown', () => { usingKeyboard = false; }, true);
 let lastView = 'Dp';
-function showView(sub) { // sub = 'Dp', 'Theme' or false for the main page
+function showView(sub) { // sub = 'Dp', 'Mode', 'Theme' or false for the main page
   if (sub) lastView = sub;
   $('setMain').hidden = !!sub;
-  $('setDp').hidden = sub !== 'Dp';
-  $('setTheme').hidden = sub !== 'Theme';
-  (sub ? $(sub === 'Dp' ? 'dpList' : 'themeList').querySelector('[aria-checked="true"]') : $('open' + lastView)).focus({ focusVisible: usingKeyboard });
+  ['Dp', 'Mode', 'Theme'].forEach(v => { $('set' + v).hidden = sub !== v; });
+  (sub ? $(sub.toLowerCase() + 'List').querySelector('[aria-checked="true"]') : $('open' + lastView)).focus({ focusVisible: usingKeyboard });
 }
 function renderDp() {
   $('dpVal').textContent = dpLabel(settings.dp);
@@ -691,10 +706,10 @@ function openSettings() {
   $('optTape').checked = !tapeEl.hidden;
   $('optHaptics').checked = settings.haptics;
   renderDp();
+  renderModes();
   renderThemes();
   $('setMain').hidden = false;
-  $('setDp').hidden = true;
-  $('setTheme').hidden = true;
+  ['Dp', 'Mode', 'Theme'].forEach(v => { $('set' + v).hidden = true; });
   setDlg.showModal();
   setDlg.focus({ focusVisible: false });
 }
@@ -719,71 +734,73 @@ $('dpList').addEventListener('click', e => {
   showView(false);
 });
 
-// ---- Themes ---- [name, label, preview colours: background, number key, operator]
+// ---- Appearance + Themes ---- [name, label, preview colours: light background, dark background, operator]
 const THEMES = [
-  ['auto-classic', 'Auto: Classic Light / Classic', '#f2f2f7', '#000', '#e3923b'],
-  ['auto', 'Auto: Blush / Sakura', '#fff0f5', '#1c0f16', '#ff6f9f'],
-  ['auto-men', 'Auto: Slate / Navy', '#eef2f6', '#0b1220', '#3b82f6'],
-  ['classic', 'Classic', '#000', '#f2f2f2', '#e3923b'],
-  ['classic-light', 'Classic Light', '#f2f2f7', '#fff', '#e3923b'],
-  ['sakura', 'Sakura', '#1c0f16', '#ffd6e5', '#ff6f9f'],
-  ['lavender', 'Lavender', '#15111d', '#e9e0fb', '#ac85ff'],
-  ['peach', 'Peach', '#1c1412', '#fbe0d3', '#f0907a'],
-  ['blush', 'Blush (light)', '#fff0f5', '#fff', '#ff6f9f'],
-  ['navy', 'Navy', '#0b1220', '#dbe4f0', '#3b82f6'],
-  ['forest', 'Forest', '#0f1510', '#dfe6d5', '#5f8f45'],
-  ['carbon', 'Carbon', '#0d0d0d', '#3a3a3c', '#e04b3a'],
-  ['slate', 'Slate (light)', '#eef2f6', '#fff', '#2f5d8a']
+  ['classic', 'Classic', '#f2f2f7', '#000', '#e3923b'],
+  ['sakura', 'Sakura', '#fff0f5', '#1c0f16', '#ff6f9f'],
+  ['lavender', 'Lavender', '#f5f1fc', '#15111d', '#ac85ff'],
+  ['navy', 'Navy', '#eef2f6', '#0b1220', '#3b82f6'],
+  ['forest', 'Forest', '#f1f4ec', '#0f1510', '#5f8f45']
 ];
-const themeOf = n => THEMES.find(t => t[0] === n) || THEMES.find(t => t[0] === 'classic'); // default Classic
-// Auto themes follow the phone: [Light mode theme, Dark mode theme]
-const AUTO = { 'auto-classic': ['classic-light', 'classic'], auto: ['blush', 'sakura'], 'auto-men': ['slate', 'navy'] };
-const LIGHT = ['classic-light', 'blush', 'slate'];
-const lightMode = matchMedia('(prefers-color-scheme: light)');
-function applyTheme() {
-  settings.theme = themeOf(settings.theme)[0];
-  const pair = AUTO[settings.theme];
-  const t = themeOf(pair ? pair[lightMode.matches ? 0 : 1] : settings.theme);
-  if (t[0] === 'classic') delete document.documentElement.dataset.theme;
-  else document.documentElement.dataset.theme = t[0];
-  document.querySelector('meta[name="theme-color"]').content = t[2];
-  document.querySelector('meta[name="color-scheme"]').content = LIGHT.includes(t[0]) ? 'light' : 'dark';
+const MODES = [['system', 'Follow System'], ['light', 'Light'], ['dark', 'Dark']];
+const CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
+{ // saved choice: new {theme, mode}, or an old single theme name
+  let [t, m] = saved.mode ? [saved.theme, saved.mode] : (OLD_THEMES[saved.theme] || []);
+  settings.theme = THEMES.some(x => x[0] === t) ? t : 'classic';
+  settings.mode = MODES.some(x => x[0] === m) ? m : 'dark';
 }
-settings.theme = themeOf(saved.theme)[0];
+function applyTheme() {
+  document.documentElement.dataset.theme = themeAttr(settings.theme, settings.mode);
+  const css = getComputedStyle(document.documentElement);
+  document.querySelector('meta[name="theme-color"]').content = css.getPropertyValue('--bg').trim();
+  document.querySelector('meta[name="color-scheme"]').content = css.colorScheme;
+}
 applyTheme();
-lightMode.addEventListener('change', () => { if (AUTO[settings.theme]) applyTheme(); });
-function renderThemes() {
-  $('themeVal').textContent = themeOf(settings.theme)[1];
-  $('themeList').textContent = '';
-  THEMES.forEach(([name, label, ...cols]) => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'row';
-    b.setAttribute('role', 'radio');
-    b.setAttribute('aria-checked', String(name === settings.theme));
-    b.dataset.theme = name;
-    b.append(label);
+lightMode.addEventListener('change', () => { if (settings.mode === 'system') applyTheme(); });
+// One radio row: label, optional colour dots, ✓ when chosen
+function radioRow(key, val, label, chosen, cols) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'row';
+  b.setAttribute('role', 'radio');
+  b.setAttribute('aria-checked', String(chosen));
+  b.dataset[key] = val;
+  b.append(label);
+  if (cols) {
     const dots = document.createElement('span');
     dots.className = 'dot';
     dots.setAttribute('aria-hidden', 'true');
     cols.forEach(c => { const i = document.createElement('i'); i.style.background = c; dots.append(i); });
     b.append(dots);
-    if (name === settings.theme) b.insertAdjacentHTML('beforeend', '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>');
-    else b.insertAdjacentHTML('beforeend', '<svg viewBox="0 0 24 24" aria-hidden="true"></svg>');
-    $('themeList').append(b);
+  }
+  b.insertAdjacentHTML('beforeend', chosen ? CHECK : '<svg viewBox="0 0 24 24" aria-hidden="true"></svg>');
+  return b;
+}
+function renderModes() {
+  $('modeVal').textContent = MODES.find(m => m[0] === settings.mode)[1];
+  $('modeList').replaceChildren(...MODES.map(([v, label]) => radioRow('mode', v, label, v === settings.mode)));
+}
+function renderThemes() {
+  $('themeVal').textContent = THEMES.find(t => t[0] === settings.theme)[1];
+  $('themeList').replaceChildren(...THEMES.map(([v, label, ...cols]) => radioRow('theme', v, label, v === settings.theme, cols)));
+}
+function pickFrom(list, key, render) {
+  $(key + 'List').addEventListener('click', e => {
+    const b = e.target.closest('[data-' + key + ']');
+    if (!b || !list.some(x => x[0] === b.dataset[key])) return;
+    settings[key] = b.dataset[key];
+    saveSettings();
+    applyTheme();
+    render();
+    $(key + 'List').querySelector('[aria-checked="true"]').focus({ focusVisible: usingKeyboard });
   });
 }
+pickFrom(MODES, 'mode', renderModes);
+pickFrom(THEMES, 'theme', renderThemes);
+$('openMode').addEventListener('click', () => showView('Mode'));
+$('modeBack').addEventListener('click', () => showView(false));
 $('openTheme').addEventListener('click', () => showView('Theme'));
 $('themeBack').addEventListener('click', () => showView(false));
-$('themeList').addEventListener('click', e => {
-  const b = e.target.closest('[data-theme]');
-  if (!b || !THEMES.some(t => t[0] === b.dataset.theme)) return;
-  settings.theme = b.dataset.theme;
-  saveSettings();
-  applyTheme();
-  renderThemes();
-  $('themeList').querySelector('[aria-checked="true"]').focus({ focusVisible: usingKeyboard });
-});
 
 // Long press the trash key to recover the last cleared history
 const trashBtn = document.querySelector('[data-k="clear"]').parentElement;
