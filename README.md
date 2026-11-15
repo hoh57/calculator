@@ -78,6 +78,7 @@ See [CHANGELOG.md](CHANGELOG.md).
 | `sw.js`                | Service worker — keeps the app working offline        |
 | `manifest.webmanifest` | App name, colours and icons for "Add to Home Screen" |
 | `icon-*.png`           | App icons (180 for iPhone, 192/512 for others)       |
+| `sitemap.xml`          | Tells search engines (Google Search Console) the page address |
 
 No build step and no libraries — it is plain HTML, CSS and JavaScript.
 

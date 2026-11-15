@@ -2,6 +2,9 @@
 
 The version is shown on the last line of Settings. How the numbers work: see *Versioning* in the README. Phones get a new version on the second open after it is pushed.
 
+## 1.0.1
+- Better page title and description, so search engines and shared links show what the app is.
+
 ## 1.0.0
 - First numbered release: version numbers now look like `1.0.0`.
 - Settings shows the app version on the last line.
