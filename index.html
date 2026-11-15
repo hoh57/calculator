@@ -509,7 +509,7 @@ function recoverHistory() {
   store.set('calc-history', history);
   store.set('calc-trash', trash);
   renderTape();
-  tapeEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, easing: 'ease-out' }); // visual "it worked"
+  tapeEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 250, easing: 'ease-out' }); // visual "it worked"
 }
 
 // Tap a past result to use it (or the recover hint)
@@ -665,7 +665,7 @@ trashBtn.addEventListener('pointerdown', () => {
     if (!trash.length) return;
     recoverHistory();
     // Brighten flash on the 🗑 key (finger is still down, so start/end at the pressed brightness)
-    trashBtn.querySelector('.k').animate({ filter: ['brightness(1.35)', 'brightness(2)', 'brightness(1.35)'] }, { duration: 300, easing: 'ease-out' });
+    trashBtn.querySelector('.k').animate({ filter: ['brightness(1.35)', 'brightness(2)', 'brightness(1.35)'] }, { duration: 400, easing: 'ease-out' });
   }, 500);
 });
 ['pointerup', 'pointerleave', 'pointercancel'].forEach(t =>
