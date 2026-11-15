@@ -88,7 +88,7 @@ body{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-
 .eq{grid-column:5;grid-row:4/6}
 .k svg{width:40%;height:40%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 </style>
-<script>try{const t=JSON.parse(localStorage.getItem('calc-settings')||'{}').theme;if(typeof t==='string')document.documentElement.dataset.theme=t}catch{}</script>
+<script>try{let t=JSON.parse(localStorage.getItem('calc-settings')||'{}').theme;if(t==='auto')t=matchMedia('(prefers-color-scheme: light)').matches?'blush':'sakura';if(typeof t==='string')document.documentElement.dataset.theme=t}catch{}</script>
 </head>
 <body>
 <div class="app">
@@ -715,16 +715,19 @@ $('dpList').addEventListener('click', e => {
 
 // ---- Themes ---- [name, label, preview colours: background, number key, operator]
 const THEMES = [
+  ['auto', 'Auto (Blush / Sakura)', '#fff0f5', '#1c0f16', '#ff6f9f'],
   ['classic', 'Classic', '#000', '#f2f2f2', '#e3923b'],
   ['sakura', 'Sakura', '#1c0f16', '#ffd6e5', '#ff6f9f'],
   ['lavender', 'Lavender', '#15111d', '#e9e0fb', '#ac85ff'],
   ['peach', 'Peach', '#1c1412', '#fbe0d3', '#f0907a'],
   ['blush', 'Blush (light)', '#fff0f5', '#fff', '#ff6f9f']
 ];
-const themeOf = n => THEMES.find(t => t[0] === n) || THEMES[0];
+const themeOf = n => THEMES.find(t => t[0] === n) || THEMES[1]; // default Classic
+// Auto follows the phone: Light mode = Blush, Dark mode = Sakura
+const lightMode = matchMedia('(prefers-color-scheme: light)');
 function applyTheme() {
-  const t = themeOf(settings.theme);
-  settings.theme = t[0];
+  settings.theme = themeOf(settings.theme)[0];
+  const t = themeOf(settings.theme === 'auto' ? (lightMode.matches ? 'blush' : 'sakura') : settings.theme);
   if (t[0] === 'classic') delete document.documentElement.dataset.theme;
   else document.documentElement.dataset.theme = t[0];
   document.querySelector('meta[name="theme-color"]').content = t[2];
@@ -732,6 +735,7 @@ function applyTheme() {
 }
 settings.theme = themeOf(saved.theme)[0];
 applyTheme();
+lightMode.addEventListener('change', () => { if (settings.theme === 'auto') applyTheme(); });
 function renderThemes() {
   $('themeVal').textContent = themeOf(settings.theme)[1];
   $('themeList').textContent = '';
