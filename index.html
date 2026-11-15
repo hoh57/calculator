@@ -757,6 +757,11 @@ addEventListener('resize', fit);
 setTape(store.get('calc-tape', true) !== false);
 renderTape();
 render();
+// iOS settles the home screen layout after first paint (and again when reopened),
+// so keep the history pinned to the newest line whenever its box changes size.
+const toBottom = () => { tapeEl.scrollTop = tapeEl.scrollHeight; };
+new ResizeObserver(toBottom).observe(tapeEl);
+addEventListener('pageshow', toBottom);
 
 // Offline copy so it opens instantly from the home screen
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
