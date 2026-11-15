@@ -19,6 +19,11 @@
 :root[data-theme="sakura"]{--bg:#1c0f16;--num:#ffd6e5;--ntxt:#6a2445;--fn:#4d2a3c;--op:#ff6f9f;--muted:#b896a7;--hist:#f6dce7;--press:#2e1924;--bar:#2c1822;--grp:#24141c;--line:#3b2431;--sci:#3a2230;--scion:#80506a;--pill:rgba(77,42,60,.94);--on:#ff6f9f}
 :root[data-theme="lavender"]{--bg:#15111d;--num:#e9e0fb;--ntxt:#3f2b69;--fn:#3b3252;--op:#ac85ff;--muted:#a69dbf;--hist:#ebe4f8;--press:#231c31;--bar:#251f34;--grp:#1d182a;--line:#332b47;--sci:#2f2843;--scion:#6c5c93;--pill:rgba(59,50,82,.94);--on:#ac85ff}
 :root[data-theme="peach"]{--bg:#1c1412;--num:#fbe0d3;--ntxt:#6b3524;--fn:#4c3631;--op:#f0907a;--muted:#bba095;--hist:#f7e5dd;--press:#2d201d;--bar:#2c201d;--grp:#241a18;--line:#3c2c28;--sci:#3a2a26;--scion:#86605a;--pill:rgba(76,54,49,.94);--on:#f0907a}
+:root[data-theme="classic-light"]{color-scheme:light;--bg:#f2f2f7;--num:#fff;--ntxt:#000;--fn:#d4d4d9;--muted:#8e8e93;--txt:#000;--hist:#3a3a3c;--press:#e5e5ea;--bar:#e5e5ea;--grp:#fff;--line:#e5e5ea;--sci:#e5e5ea;--scion:#b8b8bd;--pill:rgba(209,209,214,.96)}
+:root[data-theme="navy"]{--bg:#0b1220;--num:#dbe4f0;--ntxt:#13233d;--fn:#26324a;--op:#3b82f6;--muted:#8a97ab;--hist:#e1e8f2;--press:#151f33;--bar:#162036;--grp:#111a2b;--line:#233049;--sci:#1f2a40;--scion:#4a5a7a;--pill:rgba(38,50,74,.94);--on:#3b82f6}
+:root[data-theme="forest"]{--bg:#0f1510;--num:#dfe6d5;--ntxt:#24331f;--fn:#2f3a2c;--op:#5f8f45;--muted:#97a38f;--hist:#e3e9dc;--press:#1a2219;--bar:#1b241a;--grp:#141c13;--line:#283326;--sci:#232d21;--scion:#52664b;--pill:rgba(47,58,44,.94);--on:#5f8f45}
+:root[data-theme="carbon"]{--bg:#0d0d0d;--num:#3a3a3c;--ntxt:#fff;--fn:#252527;--op:#e04b3a;--sci:#232325;--scion:#5a5a5e;--on:#e04b3a}
+:root[data-theme="slate"]{color-scheme:light;--bg:#eef2f6;--num:#fff;--ntxt:#1e2b3c;--fn:#d5dde7;--op:#2f5d8a;--muted:#7b8a9c;--txt:#1e2b3c;--hist:#2b3a4d;--press:#dde4ec;--bar:#dde4ec;--grp:#fff;--line:#dde4ec;--sci:#dde4ec;--scion:#a9b8c9;--pill:rgba(213,221,231,.96);--on:#2f5d8a}
 :root[data-theme="blush"]{color-scheme:light;--bg:#fff0f5;--num:#fff;--ntxt:#7a2f52;--fn:#ffd3e2;--op:#ff6f9f;--muted:#b67f97;--txt:#4f1f36;--hist:#6d2b4a;--press:#ffe0eb;--bar:#ffdbe7;--grp:#fff;--line:#f6d5e1;--sci:#ffe0eb;--scion:#f7a6c3;--pill:rgba(255,211,226,.96);--on:#ff6f9f}
 *{box-sizing:border-box;margin:0}
 html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif}
@@ -73,6 +78,7 @@ body{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-
 .cell:active{z-index:2}
 .cell:active .k{transform:scale(1.18);filter:brightness(1.35)}
 .cell:active .n{filter:brightness(.85)}
+[data-theme="carbon"] .cell:active .n{filter:brightness(1.35)}
 .sci{position:absolute;top:0;left:0;right:0;z-index:3;background:var(--bg);display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:44px;gap:8px;padding:6px 0 10px}
 .sci[hidden],.app.full .sci{display:none}
 .s{background:var(--sci);font-size:clamp(14px,4.8vw,20px)}
@@ -88,7 +94,7 @@ body{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-
 .eq{grid-column:5;grid-row:4/6}
 .k svg{width:40%;height:40%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 </style>
-<script>try{let t=JSON.parse(localStorage.getItem('calc-settings')||'{}').theme;if(t==='auto')t=matchMedia('(prefers-color-scheme: light)').matches?'blush':'sakura';if(typeof t==='string')document.documentElement.dataset.theme=t}catch{}</script>
+<script>try{let t=JSON.parse(localStorage.getItem('calc-settings')||'{}').theme;const A={'auto-classic':['classic-light','classic'],auto:['blush','sakura'],'auto-men':['slate','navy']}[t];if(A)t=A[matchMedia('(prefers-color-scheme: light)').matches?0:1];if(typeof t==='string')document.documentElement.dataset.theme=t}catch{}</script>
 </head>
 <body>
 <div class="app">
@@ -715,27 +721,37 @@ $('dpList').addEventListener('click', e => {
 
 // ---- Themes ---- [name, label, preview colours: background, number key, operator]
 const THEMES = [
-  ['auto', 'Auto (Blush / Sakura)', '#fff0f5', '#1c0f16', '#ff6f9f'],
+  ['auto-classic', 'Auto: Classic Light / Classic', '#f2f2f7', '#000', '#e3923b'],
+  ['auto', 'Auto: Blush / Sakura', '#fff0f5', '#1c0f16', '#ff6f9f'],
+  ['auto-men', 'Auto: Slate / Navy', '#eef2f6', '#0b1220', '#3b82f6'],
   ['classic', 'Classic', '#000', '#f2f2f2', '#e3923b'],
+  ['classic-light', 'Classic Light', '#f2f2f7', '#fff', '#e3923b'],
   ['sakura', 'Sakura', '#1c0f16', '#ffd6e5', '#ff6f9f'],
   ['lavender', 'Lavender', '#15111d', '#e9e0fb', '#ac85ff'],
   ['peach', 'Peach', '#1c1412', '#fbe0d3', '#f0907a'],
-  ['blush', 'Blush (light)', '#fff0f5', '#fff', '#ff6f9f']
+  ['blush', 'Blush (light)', '#fff0f5', '#fff', '#ff6f9f'],
+  ['navy', 'Navy', '#0b1220', '#dbe4f0', '#3b82f6'],
+  ['forest', 'Forest', '#0f1510', '#dfe6d5', '#5f8f45'],
+  ['carbon', 'Carbon', '#0d0d0d', '#3a3a3c', '#e04b3a'],
+  ['slate', 'Slate (light)', '#eef2f6', '#fff', '#2f5d8a']
 ];
-const themeOf = n => THEMES.find(t => t[0] === n) || THEMES[1]; // default Classic
-// Auto follows the phone: Light mode = Blush, Dark mode = Sakura
+const themeOf = n => THEMES.find(t => t[0] === n) || THEMES.find(t => t[0] === 'classic'); // default Classic
+// Auto themes follow the phone: [Light mode theme, Dark mode theme]
+const AUTO = { 'auto-classic': ['classic-light', 'classic'], auto: ['blush', 'sakura'], 'auto-men': ['slate', 'navy'] };
+const LIGHT = ['classic-light', 'blush', 'slate'];
 const lightMode = matchMedia('(prefers-color-scheme: light)');
 function applyTheme() {
   settings.theme = themeOf(settings.theme)[0];
-  const t = themeOf(settings.theme === 'auto' ? (lightMode.matches ? 'blush' : 'sakura') : settings.theme);
+  const pair = AUTO[settings.theme];
+  const t = themeOf(pair ? pair[lightMode.matches ? 0 : 1] : settings.theme);
   if (t[0] === 'classic') delete document.documentElement.dataset.theme;
   else document.documentElement.dataset.theme = t[0];
   document.querySelector('meta[name="theme-color"]').content = t[2];
-  document.querySelector('meta[name="color-scheme"]').content = t[0] === 'blush' ? 'light' : 'dark';
+  document.querySelector('meta[name="color-scheme"]').content = LIGHT.includes(t[0]) ? 'light' : 'dark';
 }
 settings.theme = themeOf(saved.theme)[0];
 applyTheme();
-lightMode.addEventListener('change', () => { if (settings.theme === 'auto') applyTheme(); });
+lightMode.addEventListener('change', () => { if (AUTO[settings.theme]) applyTheme(); });
 function renderThemes() {
   $('themeVal').textContent = themeOf(settings.theme)[1];
   $('themeList').textContent = '';
