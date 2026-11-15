@@ -5,7 +5,7 @@ The version is shown on the last line of Settings. How the numbers work: see *Ve
 ## 1.0.0
 - First numbered release: version numbers now look like `1.0.0`.
 - Settings shows the app version on the last line.
-- Includes everything below.
+- Includes everything listed under *Before 1.0.0* in CHANGELOG.md.
 
 ## Before 1.0.0
 ### build v26

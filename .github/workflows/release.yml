@@ -1,0 +1,24 @@
+# Creates a GitHub release whenever the version in sw.js changes.
+# The version comes from CACHE in sw.js (calc-1.2.3) and the notes from that version's section in CHANGELOG.md.
+name: Release
+on:
+  push:
+    branches: [main]
+    paths: [sw.js, .github/workflows/release.yml]
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create release for a new version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ver=$(grep -oP "calc-\K[0-9]+\.[0-9]+\.[0-9]+" sw.js)
+          [ -n "$ver" ] || { echo "No version found in sw.js"; exit 1; }
+          if gh release view "v$ver" >/dev/null 2>&1; then echo "v$ver is already released"; exit 0; fi
+          awk -v v="## $ver" '$0==v{f=1;next} /^## /{f=0} f' CHANGELOG.md > notes.md
+          [ -s notes.md ] || echo "See CHANGELOG.md" > notes.md
+          gh release create "v$ver" --title "$ver" --notes-file notes.md --target "$GITHUB_SHA" --latest

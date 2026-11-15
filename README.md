@@ -90,9 +90,9 @@ No build step and no libraries — it is plain HTML, CSS and JavaScript.
    - a new section at the top of `CHANGELOG.md`
 
    Phones show the new version on the **second** open after the push (the first open quietly downloads it).
-3. After the push, create a GitHub release: **Releases → Draft a new release**, new tag `v1.2.3`
-   (the same number with a `v`), title `1.2.3`, paste that version's CHANGELOG notes, **Publish**.
-   The repo page then shows it as *Latest*.
+3. The release is automatic: when `sw.js` gets a new version, a GitHub Action
+   (`.github/workflows/release.yml`) creates tag `v1.2.3` and release `1.2.3` with that version's CHANGELOG notes,
+   and the repo page shows it as *Latest*. So write the CHANGELOG section **before** or in the same push.
 
 ### Versioning
 The version has three numbers, **MAJOR.MINOR.PATCH** (e.g. `1.2.3`):
