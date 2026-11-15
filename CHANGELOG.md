@@ -2,6 +2,9 @@
 
 Version numbers match `CACHE` in `sw.js`. Phones get a new version on the second open after it is pushed.
 
+## v27
+- Settings shows the app version on the last line.
+
 ## v26
 - Settings now has **Appearance** (Light, Dark, Follow System) and **Theme** as two separate choices.
 - Themes: Classic, Sakura, Lavender, Navy and Forest, each with a light and a dark version.

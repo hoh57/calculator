@@ -57,6 +57,7 @@ when you reopen it, ready to continue. It is not added to the history. AC clears
 - Decimal Places: Unlimited, or fixed 0–5 (e.g. `10.00`)
 - Appearance: Light, Dark or Follow System
 - Theme: Classic, Sakura, Lavender, Navy or Forest (each has a light and a dark version)
+- Version: the version you are running, on the last line
 
 Follow System on a home screen app only switches after the app is fully closed and reopened
 (an iOS bug); in Safari it switches straight away. The home screen icon stays the same for every theme.
@@ -83,7 +84,7 @@ No build step and no libraries — it is plain HTML, CSS and JavaScript.
 ## Making changes
 
 1. Edit the files and push to `main`. GitHub Pages serves the repo root.
-2. **Bump `CACHE` in `sw.js`** (e.g. `calc-v26` → `calc-v27`), and add a line to `CHANGELOG.md` on every push that changes the app.
+2. **Bump `CACHE` in `sw.js`** (e.g. `calc-v27` → `calc-v28`), set the same number on the **Version** line in Settings (`index.html`), and add a line to `CHANGELOG.md` on every push that changes the app.
    Phones show the new version on the **second** open after the push (the first open quietly downloads it).
 
 To test on a computer, serve the folder locally (a service worker needs http, not `file://`):

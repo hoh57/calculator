@@ -59,6 +59,7 @@ body{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-
 .group{margin-top:30px;background:var(--grp)}
 .row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:52px;padding:0 16px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--txt);font-size:18px;font-family:inherit;text-align:left;cursor:pointer}
 .row:last-child{border-bottom:0}
+.row.ver{cursor:default}
 .row .val{display:flex;align-items:center;gap:4px;color:var(--muted)}
 .dot{display:inline-flex;gap:3px;margin-left:auto}.dot i{width:14px;height:14px;border-radius:50%;box-shadow:0 0 0 1px rgba(128,128,128,.35)}
 .row input[switch]{margin:0;accent-color:var(--on)}
@@ -158,6 +159,9 @@ try { const c = JSON.parse(localStorage.getItem('calc-settings') || '{}') || {};
       <button type="button" class="row" id="openMode" aria-describedby="modeVal">Appearance <span class="val"><span id="modeVal">Dark</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button>
       <button type="button" class="row" id="openTheme" aria-describedby="themeVal">Theme <span class="val"><span id="themeVal">Classic</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button>
       <button type="button" class="row" id="openDp" aria-describedby="dpVal">Decimal Places <span class="val"><span id="dpVal">Unlimited</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button>
+    </div>
+    <div class="group">
+      <div class="row ver">Version <span class="val">v27</span></div>
     </div>
   </div>
   <div class="view" id="setDp" hidden>
