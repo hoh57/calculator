@@ -46,6 +46,7 @@ body{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-
 .row .val{display:flex;align-items:center;gap:4px;color:var(--muted)}
 .row input[switch]{margin:0;accent-color:#34c759}
 #settings :focus-visible{outline:3px solid #5ac8fa;outline-offset:-3px}
+#settings:focus{outline:none}
 .empty{color:var(--muted);font-size:16px;padding:12px 0}
 .recover{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:none;border:0;color:var(--muted);font-size:clamp(17px,5vw,22px);font-family:inherit;padding:12px 0;cursor:pointer}
 .recover svg{width:1.1em;height:1.1em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -56,7 +57,14 @@ body{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-
 .main.wrap{white-space:normal;word-break:break-all}
 .keys{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:repeat(5,minmax(0,1fr));gap:5px;width:min(100%,64dvh);aspect-ratio:1;margin:0 auto}
 .k{min-width:0;min-height:0;white-space:nowrap;border:0;border-radius:999px;font-size:clamp(26px,11.5vw,46px);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--txt);background:var(--fn);font-family:inherit;-webkit-tap-highlight-color:transparent}
-.k:active,.cell:active .k{opacity:.65}
+.k{transition:transform .15s ease,filter .15s ease}
+.cell:active{z-index:2}
+.cell:active .k{transform:scale(1.18);filter:brightness(1.35)}
+.cell:active .n{filter:brightness(.85)}
+.sci{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:44px;gap:8px;padding:6px 0;flex-shrink:0}
+.sci[hidden],.app.full .sci{display:none}
+.s{background:#2a2a2c;font-size:clamp(14px,4.8vw,20px)}
+.s.on{background:#636366}
 .cell{position:relative;display:grid;min-width:0;min-height:0}
 .cell>.k{width:100%;height:100%}
 .tick{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;border-radius:999px;cursor:pointer;-webkit-tap-highlight-color:transparent}
@@ -65,12 +73,13 @@ body{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-
 .n{background:var(--num);color:#000}
 .o{background:var(--op);font-size:clamp(30px,12.5vw,50px)}
 .zero{grid-column:span 2}
-.eq{grid-column:5;grid-row:3/6}
+.eq{grid-column:5;grid-row:4/6}
 .k svg{width:40%;height:40%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 </style>
 </head>
 <body>
 <div class="app">
+  <div class="sci" id="sci" hidden></div>
   <div class="screen">
     <button class="fs" id="fsBtn" type="button" hidden aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 15v5h-5M4 4l6 6M20 20l-6-6"/></svg><span>Full Screen</span></button>
     <div class="tape" id="tape" aria-label="History"></div>
@@ -82,24 +91,25 @@ body{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-
     <button class="k f" data-k="neg" aria-label="Change sign">+/−</button>
     <button class="k f" data-k="pct" aria-label="Percent">%</button>
     <button class="k" data-k="back" aria-label="Delete"><svg viewBox="0 0 24 24"><path d="M20 12H5M11 5l-7 7 7 7"/></svg></button>
-    <button class="k" data-k="clear" aria-label="Clear history"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg></button>
+    <button class="k" data-k="sci" aria-label="Scientific keys"><svg viewBox="0 0 24 24"><g fill="currentColor" stroke="none"><circle cx="5" cy="5" r="2.3"/><circle cx="12" cy="5" r="2.3"/><circle cx="19" cy="5" r="2.3"/><circle cx="5" cy="12" r="2.3"/><circle cx="12" cy="12" r="2.3"/><circle cx="19" cy="12" r="2.3"/><circle cx="5" cy="19" r="2.3"/><circle cx="12" cy="19" r="2.3"/><circle cx="19" cy="19" r="2.3"/></g></svg></button>
 
     <button class="k n" data-k="7">7</button>
     <button class="k n" data-k="8">8</button>
     <button class="k n" data-k="9">9</button>
     <button class="k o" data-k="÷" aria-label="Divide">÷</button>
-    <button class="k" data-k="settings" aria-label="Settings"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg></button>
+    <button class="k" data-k="clear" aria-label="Clear history"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg></button>
 
     <button class="k n" data-k="4">4</button>
     <button class="k n" data-k="5">5</button>
     <button class="k n" data-k="6">6</button>
     <button class="k o" data-k="×" aria-label="Multiply">×</button>
-    <button class="k o eq" data-k="eq" aria-label="Equals">=</button>
+    <button class="k" data-k="settings" aria-label="Settings"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg></button>
 
     <button class="k n" data-k="1">1</button>
     <button class="k n" data-k="2">2</button>
     <button class="k n" data-k="3">3</button>
     <button class="k o" data-k="−" aria-label="Minus">−</button>
+    <button class="k o eq" data-k="eq" aria-label="Equals">=</button>
 
     <button class="k n zero" data-k="0">0</button>
     <button class="k n" data-k="." aria-label="Decimal point">.</button>
@@ -107,7 +117,7 @@ body{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-
   </div>
 </div>
 
-<dialog id="settings" aria-labelledby="setTitle">
+<dialog id="settings" aria-labelledby="setTitle" tabindex="-1" autofocus>
   <div class="view" id="setMain">
     <header><span></span><h2 id="setTitle">Settings</h2><button type="button" class="hbtn ok" id="setDone" aria-label="Done"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg></button></header>
     <div class="group">
@@ -125,7 +135,7 @@ body{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-
 </dialog>
 
 <script>
-const OPS = ['+', '−', '×', '÷'];
+const OPS = ['+', '−', '×', '÷', '^', 'ʸ√', 'logᵧ'];
 const $ = id => document.getElementById(id);
 const mainEl = $('main'), prevEl = $('preview'), tapeEl = $('tape');
 const appEl = document.querySelector('.app'), fsBtn = $('fsBtn');
@@ -144,7 +154,8 @@ const DPS = ['auto', '0', '1', '2', '3', '4', '5'];
 const saved = store.get('calc-settings', {}) || {};
 const settings = {
   haptics: saved.haptics !== false,
-  dp: DPS.includes(saved.dp) ? saved.dp : 'auto'
+  dp: DPS.includes(saved.dp) ? saved.dp : 'auto',
+  rad: saved.rad === true
 };
 // Answer as text, rounded to the chosen decimal places
 function result(v) {
@@ -161,37 +172,143 @@ const isOp = t => OPS.includes(t);
 const last = () => tokens[tokens.length - 1];
 const clean = n => { const r = parseFloat(n.toPrecision(15)); return Object.is(r, -0) ? 0 : r; };
 const toStr = n => String(clean(n));
+const isLit = t => /^-?[\d.]/.test(t);           // a typed number or an answer
+const isConst = t => /^-?[πe]$/.test(t);
+const isNum = t => t !== undefined && (isLit(t) || isConst(t));
+const isOpen = t => t !== undefined && t.endsWith('('); // "(" or a function like "sin("
+const numVal = t => {
+  const n = t[0] === '-', b = n ? t.slice(1) : t;
+  const v = b === 'π' ? Math.PI : b === 'e' ? Math.E : parseFloat(b);
+  return n ? -v : v;
+};
+const toRad = x => settings.rad ? x : x * Math.PI / 180;
+const fromRad = x => settings.rad ? x : x * 180 / Math.PI;
+const snap = x => Math.abs(x) < 1e-12 ? 0 : x;       // sin(180°) = 0, not 1e-16
+const fact = x => {
+  if (x < 0 || x > 170 || !Number.isInteger(x)) return NaN;
+  let r = 1;
+  for (let i = 2; i <= x; i++) r *= i;
+  return r;
+};
+const FN = {
+  '(': x => x,
+  'sin(': x => snap(Math.sin(toRad(x))), 'cos(': x => snap(Math.cos(toRad(x))),
+  'tan(': x => (!settings.rad && Math.abs(x % 180) === 90) ? NaN : snap(Math.tan(toRad(x))),
+  'sin⁻¹(': x => fromRad(Math.asin(x)), 'cos⁻¹(': x => fromRad(Math.acos(x)), 'tan⁻¹(': x => fromRad(Math.atan(x)),
+  'sinh(': Math.sinh, 'cosh(': Math.cosh, 'tanh(': Math.tanh,
+  'sinh⁻¹(': Math.asinh, 'cosh⁻¹(': Math.acosh, 'tanh⁻¹(': Math.atanh,
+  'ln(': Math.log, 'log₁₀(': Math.log10, 'log₂(': Math.log2,
+  'e^(': Math.exp, '10^(': x => 10 ** x, '2^(': x => 2 ** x,
+  '√(': Math.sqrt, '∛(': Math.cbrt
+};
+const POST = { '!': fact, '²': x => x * x, '³': x => x ** 3 };
+const POW = {
+  '^': (a, b) => a ** b,
+  'ʸ√': (a, b) => (a < 0 && Number.isInteger(b) && b % 2) ? -((-a) ** (1 / b)) : a ** (1 / b), // x ʸ√ y = y-th root of x
+  'logᵧ': (a, b) => Math.log(a) / Math.log(b)                                                   // x logᵧ y = log base y of x
+};
+const needsCalc = () => tokens.length > 1 || (tokens.length === 1 && !isLit(tokens[0]));
 
 function fmtTok(t) {
-  if (isOp(t) || /e/.test(t)) return t;
+  if (!isLit(t) || /e/.test(t)) return t;
   const neg = t[0] === '-', b = neg ? t.slice(1) : t, i = b.indexOf('.');
   const int = (i < 0 ? b : b.slice(0, i)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   return (neg ? '-' : '') + int + (i < 0 ? '' : '.' + b.slice(i + 1));
 }
 const exprText = toks => toks.map(fmtTok).join('');
 
-// × and ÷ before + and −. No eval().
+// Order: brackets/functions, then x!, x², then powers, then × ÷, then + −.
+// A number next to a bracket or function multiplies (2π, 2(3+4)). Missing ")" are closed. No eval().
 function evaluate(toks) {
   toks = toks.slice();
-  while (toks.length && isOp(toks[toks.length - 1])) toks.pop();
-  if (!toks.length) return 0;
-  const stack = [parseFloat(toks[0])];
-  for (let i = 1; i < toks.length; i += 2) {
-    const o = toks[i], v = parseFloat(toks[i + 1]);
-    if (o === '×') stack.push(stack.pop() * v);
-    else if (o === '÷') { if (v === 0) return NaN; stack.push(stack.pop() / v); }
-    else stack.push(o === '−' ? -v : v);
-  }
-  return stack.reduce((a, b) => a + b, 0);
+  while (toks.length && (isOp(toks.at(-1)) || isOpen(toks.at(-1)))) toks.pop();
+  if (!toks.length) return NaN;
+  let i = 0;
+  const peek = () => toks[i];
+  const expr = () => {
+    let v = term();
+    while (peek() === '+' || peek() === '−') { const o = toks[i++], r = term(); v = o === '+' ? v + r : v - r; }
+    return v;
+  };
+  const term = () => {
+    let v = power();
+    for (;;) {
+      const t = peek();
+      if (t === '×' || t === '÷') { i++; const r = power(); v = t === '×' ? v * r : r === 0 ? NaN : v / r; }
+      else if (isNum(t) || isOpen(t)) v *= power();
+      else return v;
+    }
+  };
+  const power = () => { const b = post(), f = POW[peek()]; if (!f) return b; i++; return f(b, power()); };
+  const post = () => { let v = prim(); while (POST[peek()]) v = POST[toks[i++]](v); return v; };
+  const prim = () => {
+    const t = toks[i++];
+    if (isNum(t)) return numVal(t);
+    if (isOpen(t)) { const v = expr(); if (peek() === ')') i++; return FN[t] ? FN[t](v) : NaN; }
+    return NaN;
+  };
+  const v = expr();
+  return i < toks.length ? NaN : v;
 }
 
 function resetIfError() { if (error) { error = false; tokens = []; } }
 
+// Where the last number or bracket group starts (-1 if the expression ends in an operator)
+function operandStart() {
+  let j = tokens.length - 1;
+  while (j >= 0 && POST[tokens[j]]) j--;
+  if (j < 0) return -1;
+  if (isNum(tokens[j])) return j;
+  if (tokens[j] !== ')') return -1;
+  for (let d = 0; j >= 0; j--) {
+    if (tokens[j] === ')') d++;
+    else if (isOpen(tokens[j]) && --d === 0) return j;
+  }
+  return -1;
+}
+// sin, √, ln…: applies to the number just typed (30 sin → sin(30)), else opens "sin("
+function func(f) {
+  resetIfError();
+  const s = operandStart();
+  if (s < 0) tokens.push(f);
+  else if (tokens[s] === '(' && last() === ')') tokens[s] = f; // (π÷2) sin → sin(π÷2)
+  else { tokens.splice(s, 0, f); tokens.push(')'); }
+  fresh = false;
+  render();
+}
+function postfix(p) {
+  if (error || operandStart() < 0) return;
+  tokens.push(p);
+  fresh = false;
+  render();
+}
+function openParen() {
+  resetIfError();
+  if (fresh) tokens = [];
+  fresh = false;
+  tokens.push('(');
+  render();
+}
+function closeParen() {
+  const open = tokens.filter(isOpen).length - tokens.filter(t => t === ')').length;
+  if (error || open <= 0 || operandStart() < 0) return;
+  tokens.push(')');
+  fresh = false;
+  render();
+}
+function constant(c) { // π, e, Rand
+  resetIfError();
+  if (fresh && isNum(last())) tokens.pop();
+  tokens.push(c === 'rand' ? String(+Math.random().toFixed(10)) : c);
+  fresh = c === 'rand';
+  render();
+}
+
 function digit(d) {
   resetIfError();
-  if (fresh && tokens.length && !isOp(last())) tokens.pop();
+  if (fresh && isNum(last())) tokens.pop();
   fresh = false;
-  if (!tokens.length || isOp(last())) { tokens.push(d === '.' ? '0.' : d); return render(); }
+  if (!tokens.length || !isLit(last()) || /e/.test(last())) { tokens.push(d === '.' ? '0.' : d); return render(); }
   let t = last();
   if (d === '.') { if (t.includes('.')) return; t += '.'; }
   else {
@@ -206,6 +323,7 @@ function op(o) {
   resetIfError();
   fresh = false;
   if (!tokens.length) tokens.push('0');
+  if (isOpen(last())) { if (o === '−') { tokens.push('-0'); render(); } return; }
   if (isOp(last())) tokens[tokens.length - 1] = o;
   else {
     if (last().endsWith('.')) tokens[tokens.length - 1] = last().slice(0, -1);
@@ -216,7 +334,7 @@ function op(o) {
 
 function negate() {
   if (error) return;
-  if (!tokens.length || isOp(last())) { tokens.push('-0'); fresh = false; return render(); }
+  if (!isNum(last())) { tokens.push('-0'); fresh = false; return render(); }
   const t = last();
   tokens[tokens.length - 1] = t[0] === '-' ? t.slice(1) : '-' + t;
   render();
@@ -224,7 +342,7 @@ function negate() {
 
 // a + b% → b% of a (like iOS). Otherwise b ÷ 100.
 function percent() {
-  if (error || !tokens.length || isOp(last())) return;
+  if (error || !isLit(last())) return;
   const i = tokens.length - 1, cur = parseFloat(tokens[i]), p = tokens[i - 1];
   const v = (p === '+' || p === '−') ? evaluate(tokens.slice(0, i - 1)) * cur / 100 : cur / 100;
   tokens[i] = toStr(v);
@@ -236,7 +354,7 @@ function back() {
   if (error) { error = false; tokens = []; return render(); }
   if (!tokens.length) return;
   const t = last();
-  if (isOp(t) || /e/.test(t) || fresh) tokens.pop();
+  if (!isLit(t) || /e/.test(t) || fresh) tokens.pop();
   else {
     const s = t.slice(0, -1);
     if (s === '' || s === '-') tokens.pop(); else tokens[tokens.length - 1] = s;
@@ -247,8 +365,9 @@ function back() {
 
 function equals() {
   if (error || !tokens.length) return;
-  while (tokens.length && isOp(last())) tokens.pop();
-  if (!tokens.some(isOp)) return render();
+  while (tokens.length && (isOp(last()) || isOpen(last()))) tokens.pop();
+  if (!needsCalc()) return render();
+  for (let n = tokens.filter(isOpen).length - tokens.filter(t => t === ')').length; n > 0; n--) tokens.push(')');
   const v = evaluate(tokens);
   if (!isFinite(v)) { error = true; tokens = []; fresh = false; return render(); }
   const r = result(v);
@@ -278,7 +397,7 @@ function fit() {
 function render() {
   mainEl.textContent = error ? 'Error' : tokens.length ? exprText(tokens) : '0';
   let pv = '';
-  if (!error && tokens.some(isOp)) {
+  if (!error && needsCalc()) {
     const v = evaluate(tokens);
     if (isFinite(v)) pv = '= ' + fmtTok(result(v));
   }
@@ -374,7 +493,7 @@ tapeEl.addEventListener('click', e => {
   const h = history[+b.dataset.i];
   if (!h) return;
   resetIfError();
-  if (tokens.length && !isOp(last())) tokens[tokens.length - 1] = h.r; else tokens.push(h.r);
+  if (isNum(last())) tokens[tokens.length - 1] = h.r; else tokens.push(h.r);
   fresh = true;
   if (appEl.classList.contains('full')) setFull(false);
   render();
@@ -385,6 +504,9 @@ const actions = {
   neg: negate, pct: percent, back, eq: equals,
   clear() { this.ac(); clearHistory(); },
   settings: openSettings,
+  sci() { sciEl.hidden = !sciEl.hidden; store.set('calc-sci', !sciEl.hidden); render(); },
+  '2nd': toggleSecond,
+  rad() { settings.rad = !settings.rad; store.set('calc-settings', settings); showUnit(); render(); },
 };
 
 function setTape(show) {
@@ -392,10 +514,46 @@ function setTape(show) {
   syncFs();
 }
 
+// ---- Scientific panel (9-dot key) ----
+const SCI = [
+  ['2nd', '2nd'], ['sin(', 'sin', 'sin⁻¹(', 'sin⁻¹'], ['cos(', 'cos', 'cos⁻¹(', 'cos⁻¹'], ['tan(', 'tan', 'tan⁻¹(', 'tan⁻¹'], ['logᵧ', 'logᵧ'], ['log₂(', 'log₂', '2^(', '2ˣ'],
+  ['rad', 'Deg'], ['sinh(', 'sinh', 'sinh⁻¹(', 'sinh⁻¹'], ['cosh(', 'cosh', 'cosh⁻¹(', 'cosh⁻¹'], ['tanh(', 'tanh', 'tanh⁻¹(', 'tanh⁻¹'], ['ln(', 'ln', 'e^(', 'eˣ'], ['log₁₀(', 'log₁₀', '10^(', '10ˣ'],
+  ['!', 'x!'], ['√(', '√'], ['∛(', '∛'], ['ʸ√', 'ʸ√x'], ['e', 'e'], ['π', 'π'],
+  ['rand', 'Rand'], ['²', 'x²'], ['³', 'x³'], ['^', 'xʸ'], ['(', '('], [')', ')']
+];
+const sciEl = $('sci');
+SCI.forEach(([k1, l1, k2, l2]) => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'k s';
+  b.dataset.k = k1;
+  b.textContent = l1;
+  if (k2) Object.assign(b.dataset, { k1, l1, k2, l2 });
+  sciEl.append(b);
+});
+const secondBtn = sciEl.querySelector('[data-k="2nd"]'), radBtn = sciEl.querySelector('[data-k="rad"]');
+let second = false;
+function toggleSecond() {
+  second = !second;
+  secondBtn.classList.toggle('on', second);
+  secondBtn.setAttribute('aria-pressed', String(second));
+  sciEl.querySelectorAll('[data-k2]').forEach(b => {
+    b.dataset.k = second ? b.dataset.k2 : b.dataset.k1;
+    b.textContent = second ? b.dataset.l2 : b.dataset.l1;
+  });
+}
+function showUnit() {
+  radBtn.textContent = settings.rad ? 'Rad' : 'Deg';
+  radBtn.setAttribute('aria-label', 'Angle unit: ' + (settings.rad ? 'radians' : 'degrees') + '. Tap to switch');
+}
+secondBtn.setAttribute('aria-pressed', 'false');
+showUnit();
+sciEl.hidden = store.get('calc-sci', false) !== true;
+
 // iPhone haptics: an invisible system switch sits on each key. A real finger tap
 // toggles it and iOS plays its tick (the only web haptic iOS 26.5+ allows).
 const keysEl = document.querySelector('.keys');
-keysEl.querySelectorAll(':scope > .k').forEach(b => {
+document.querySelectorAll('.keys > .k, .sci > .k').forEach(b => {
   const cell = document.createElement('div');
   cell.className = 'cell';
   ['zero', 'eq'].forEach(c => { if (b.classList.contains(c)) { b.classList.remove(c); cell.classList.add(c); } });
@@ -409,16 +567,19 @@ keysEl.querySelectorAll(':scope > .k').forEach(b => {
   cell.append(b, t);
 });
 document.addEventListener('touchstart', () => {}, { passive: true }); // lets :active show on iPhone
-const ON_RELEASE = ['clear', 'settings'];
+const ON_RELEASE = ['clear', 'settings', 'sci'];
 const keyOf = el => el.closest('.cell')?.querySelector('.k')?.dataset.k;
 
 // ---- Settings page ----
 const setDlg = $('settings');
 const dpLabel = v => v === 'auto' ? 'Unlimited' : v;
+let usingKeyboard = false;
+addEventListener('keydown', () => { usingKeyboard = true; }, true);
+addEventListener('pointerdown', () => { usingKeyboard = false; }, true);
 function showView(dp) {
   $('setMain').hidden = dp;
   $('setDp').hidden = !dp;
-  (dp ? $('dpList').querySelector('[aria-checked="true"]') : $('openDp')).focus();
+  (dp ? $('dpList').querySelector('[aria-checked="true"]') : $('openDp')).focus({ focusVisible: usingKeyboard });
 }
 function renderDp() {
   $('dpVal').textContent = dpLabel(settings.dp);
@@ -442,9 +603,10 @@ function openSettings() {
   $('setMain').hidden = false;
   $('setDp').hidden = true;
   setDlg.showModal();
+  setDlg.focus({ focusVisible: false });
 }
 function applyHaptics() {
-  keysEl.querySelectorAll('.tick').forEach(t =>
+  document.querySelectorAll('.tick').forEach(t =>
     settings.haptics ? t.setAttribute('switch', '') : t.removeAttribute('switch'));
 }
 applyHaptics();
@@ -483,15 +645,20 @@ function press(k) {
   haptic();
   if (/^[\d.]$/.test(k)) digit(k);
   else if (isOp(k)) op(k);
+  else if (k === '(') openParen();
+  else if (k === ')') closeParen();
+  else if (FN[k]) func(k);
+  else if (POST[k]) postfix(k);
+  else if (k === 'e' || k === 'π' || k === 'rand') constant(k);
   else actions[k]?.();
 }
 // Finger/mouse: act on touch-down so fast taps are never lost (trash waits for release: long press = recover)
-keysEl.addEventListener('pointerdown', e => {
+appEl.addEventListener('pointerdown', e => {
   if (e.pointerType === 'mouse' && e.button !== 0) return;
   const k = keyOf(e.target);
   if (k && !ON_RELEASE.includes(k)) press(k);
 });
-keysEl.addEventListener('click', e => {
+appEl.addEventListener('click', e => {
   const k = keyOf(e.target);
   if (!k) return;
   if (e.target.classList.contains('tick')) {
@@ -506,7 +673,7 @@ keysEl.addEventListener('click', e => {
 // Keyboard support
 addEventListener('keydown', e => {
   if (e.ctrlKey || e.metaKey || e.altKey || setDlg.open) return;
-  const k = e.key, map = { '*': '×', x: '×', '/': '÷', '-': '−', '+': '+' };
+  const k = e.key, map = { '*': '×', x: '×', '/': '÷', '-': '−', '+': '+', '^': '^' };
   if (k === 'Enter' && document.activeElement?.matches('button:focus-visible')) return;
   if (appEl.classList.contains('full') && /^[\d.%=+\-*\/x]$|^(Enter|Backspace|Escape|Delete)$/.test(k)) setFull(false);
   if (/^[\d.]$/.test(k)) digit(k);
@@ -515,6 +682,9 @@ addEventListener('keydown', e => {
   else if (k === 'Backspace') back();
   else if (k === 'Escape' || k === 'Delete') actions.ac();
   else if (k === '%') percent();
+  else if (k === '(') openParen();
+  else if (k === ')') closeParen();
+  else if (k === '!') postfix('!');
   else return;
   e.preventDefault();
 });
