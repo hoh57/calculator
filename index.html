@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Calculator">
+<meta name="theme-color" content="#000000">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Calculator</title>
+<style>
+:root{--bg:#000;--num:#f2f2f2;--fn:#333;--op:#e3923b;--muted:#8e8e93;--txt:#fff}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif}
+body{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-area-inset-top) calc(env(safe-area-inset-right) + 14px) calc(env(safe-area-inset-bottom) + 14px) calc(env(safe-area-inset-left) + 14px);-webkit-user-select:none;user-select:none;touch-action:manipulation}
+.app{flex:1;display:flex;flex-direction:column;min-height:0;width:100%;max-width:480px;margin:0 auto}
+.screen{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-end;text-align:right}
+.tape{overflow-y:auto;padding:8px 0;font-size:clamp(18px,5.5vw,26px);overscroll-behavior:contain}
+.tape[hidden]{display:none}
+.date{color:var(--op);font-weight:500;margin:10px 0 4px}
+.entry{display:block;width:100%;background:none;border:0;color:var(--muted);text-align:right;font:inherit;padding:4px 2px;word-break:break-all;cursor:pointer;border-radius:8px}
+.entry b{color:#e5e5e5;font-weight:400}
+.entry:active{background:#1c1c1e}
+.empty{color:var(--muted);font-size:16px;padding:12px 0}
+.preview{color:var(--muted);font-size:clamp(20px,6vw,28px);min-height:1.3em;margin-top:6px;overflow:hidden;white-space:nowrap}
+.main{font-weight:300;line-height:1.15;white-space:nowrap;overflow:hidden;padding-bottom:12px}
+.keys{display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(5,1fr);gap:10px;width:min(100%,62dvh);aspect-ratio:1;margin:0 auto}
+.k{border:0;border-radius:999px;font-size:clamp(22px,7.5vw,36px);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--txt);background:var(--fn);font-family:inherit;-webkit-tap-highlight-color:transparent}
+.k:active{opacity:.65}
+.k:focus-visible,.entry:focus-visible{outline:3px solid #5ac8fa;outline-offset:2px}
+.n{background:var(--num);color:#000}
+.o{background:var(--op);font-size:clamp(28px,9vw,44px)}
+.zero{grid-column:span 2}
+.eq{grid-column:5;grid-row:3/6}
+.k svg{width:40%;height:40%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+dialog{background:#1c1c1e;color:var(--txt);border:0;border-radius:16px;padding:20px;width:min(300px,85vw);text-align:center}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+dialog p{font-size:17px;font-weight:600}
+dialog .sub{font-size:14px;font-weight:400;color:var(--muted);margin-top:6px}
+dialog .row{display:flex;gap:10px;margin-top:18px}
+dialog button{flex:1;padding:12px;border:0;border-radius:10px;font-size:16px;background:var(--fn);color:var(--txt);cursor:pointer}
+dialog .danger{background:#ff453a}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="screen">
+    <div class="tape" id="tape" aria-label="History"></div>
+    <div class="preview" id="preview" aria-hidden="true"></div>
+    <div class="main" id="main" role="status" aria-live="polite">0</div>
+  </div>
+  <div class="keys">
+    <button class="k" data-k="ac" aria-label="All clear">AC</button>
+    <button class="k" data-k="neg" aria-label="Change sign">+/−</button>
+    <button class="k" data-k="pct" aria-label="Percent">%</button>
+    <button class="k" data-k="back" aria-label="Delete"><svg viewBox="0 0 24 24"><path d="M20 12H5M11 5l-7 7 7 7"/></svg></button>
+    <button class="k" data-k="clear" aria-label="Clear history"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg></button>
+
+    <button class="k n" data-k="7">7</button>
+    <button class="k n" data-k="8">8</button>
+    <button class="k n" data-k="9">9</button>
+    <button class="k o" data-k="÷" aria-label="Divide">÷</button>
+    <button class="k" data-k="hist" id="histBtn" aria-label="Show history" aria-pressed="true"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg></button>
+
+    <button class="k n" data-k="4">4</button>
+    <button class="k n" data-k="5">5</button>
+    <button class="k n" data-k="6">6</button>
+    <button class="k o" data-k="×" aria-label="Multiply">×</button>
+    <button class="k o eq" data-k="eq" aria-label="Equals">=</button>
+
+    <button class="k n" data-k="1">1</button>
+    <button class="k n" data-k="2">2</button>
+    <button class="k n" data-k="3">3</button>
+    <button class="k o" data-k="−" aria-label="Minus">−</button>
+
+    <button class="k n zero" data-k="0">0</button>
+    <button class="k n" data-k="." aria-label="Decimal point">.</button>
+    <button class="k o" data-k="+" aria-label="Plus">+</button>
+  </div>
+</div>
+
+<dialog id="dlg">
+  <form method="dialog">
+    <p>Clear all history?</p>
+    <p class="sub">This can't be undone.</p>
+    <div class="row"><button value="cancel">Cancel</button><button value="ok" class="danger">Clear</button></div>
+  </form>
+</dialog>
+
+<script>
+const OPS = ['+', '−', '×', '÷'];
+const $ = id => document.getElementById(id);
+const mainEl = $('main'), prevEl = $('preview'), tapeEl = $('tape'), dlg = $('dlg');
+
+// Saved history stays in this browser only; works without storage too.
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+};
+let history = store.get('calc-history', []);
+if (!Array.isArray(history)) history = [];
+history = history.filter(h => h && typeof h.e === 'string' && typeof h.r === 'string'
+  && typeof h.t === 'number' && isFinite(parseFloat(h.r)));
+
+let tokens = [];   // e.g. ['12.5', '+', '3']
+let fresh = false; // last number is a result: typing a digit replaces it
+let error = false;
+
+const isOp = t => OPS.includes(t);
+const last = () => tokens[tokens.length - 1];
+const clean = n => { const r = parseFloat(n.toPrecision(15)); return Object.is(r, -0) ? 0 : r; };
+const toStr = n => String(clean(n));
+
+function fmtTok(t) {
+  if (isOp(t) || /e/.test(t)) return t;
+  const neg = t[0] === '-', b = neg ? t.slice(1) : t, i = b.indexOf('.');
+  const int = (i < 0 ? b : b.slice(0, i)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return (neg ? '-' : '') + int + (i < 0 ? '' : '.' + b.slice(i + 1));
+}
+const exprText = toks => toks.map(fmtTok).join('');
+
+// × and ÷ before + and −. No eval().
+function evaluate(toks) {
+  toks = toks.slice();
+  while (toks.length && isOp(toks[toks.length - 1])) toks.pop();
+  if (!toks.length) return 0;
+  const stack = [parseFloat(toks[0])];
+  for (let i = 1; i < toks.length; i += 2) {
+    const o = toks[i], v = parseFloat(toks[i + 1]);
+    if (o === '×') stack.push(stack.pop() * v);
+    else if (o === '÷') { if (v === 0) return NaN; stack.push(stack.pop() / v); }
+    else stack.push(o === '−' ? -v : v);
+  }
+  return stack.reduce((a, b) => a + b, 0);
+}
+
+function resetIfError() { if (error) { error = false; tokens = []; } }
+
+function digit(d) {
+  resetIfError();
+  if (fresh && tokens.length && !isOp(last())) tokens.pop();
+  fresh = false;
+  if (!tokens.length || isOp(last())) { tokens.push(d === '.' ? '0.' : d); return render(); }
+  let t = last();
+  if (d === '.') { if (t.includes('.')) return; t += '.'; }
+  else {
+    if (t.replace(/[-.]/g, '').length >= 15) return;
+    t = t === '0' ? d : t === '-0' ? '-' + d : t + d;
+  }
+  tokens[tokens.length - 1] = t;
+  render();
+}
+
+function op(o) {
+  resetIfError();
+  fresh = false;
+  if (!tokens.length) tokens.push('0');
+  if (isOp(last())) tokens[tokens.length - 1] = o;
+  else {
+    if (last().endsWith('.')) tokens[tokens.length - 1] = last().slice(0, -1);
+    tokens.push(o);
+  }
+  render();
+}
+
+function negate() {
+  if (error) return;
+  if (!tokens.length || isOp(last())) { tokens.push('-0'); fresh = false; return render(); }
+  const t = last();
+  tokens[tokens.length - 1] = t[0] === '-' ? t.slice(1) : '-' + t;
+  render();
+}
+
+// a + b% → b% of a (like iOS). Otherwise b ÷ 100.
+function percent() {
+  if (error || !tokens.length || isOp(last())) return;
+  const i = tokens.length - 1, cur = parseFloat(tokens[i]), p = tokens[i - 1];
+  const v = (p === '+' || p === '−') ? evaluate(tokens.slice(0, i - 1)) * cur / 100 : cur / 100;
+  tokens[i] = toStr(v);
+  fresh = true;
+  render();
+}
+
+function back() {
+  if (error) { error = false; tokens = []; return render(); }
+  if (!tokens.length) return;
+  const t = last();
+  if (isOp(t) || /e/.test(t) || fresh) tokens.pop();
+  else {
+    const s = t.slice(0, -1);
+    if (s === '' || s === '-') tokens.pop(); else tokens[tokens.length - 1] = s;
+  }
+  fresh = false;
+  render();
+}
+
+function equals() {
+  if (error || !tokens.length) return;
+  while (tokens.length && isOp(last())) tokens.pop();
+  if (!tokens.some(isOp)) return render();
+  const v = evaluate(tokens);
+  if (!isFinite(v)) { error = true; tokens = []; fresh = false; return render(); }
+  const r = toStr(v);
+  history.push({ e: exprText(tokens), r, t: Date.now() });
+  if (history.length > 500) history = history.slice(-500);
+  store.set('calc-history', history);
+  tokens = [r];
+  fresh = true;
+  renderTape();
+  render();
+}
+
+function fit() {
+  let s = Math.min(88, Math.max(40, innerWidth * 0.2));
+  mainEl.style.fontSize = s + 'px';
+  while (mainEl.scrollWidth > mainEl.clientWidth && s > 22) { s -= 2; mainEl.style.fontSize = s + 'px'; }
+  mainEl.scrollLeft = mainEl.scrollWidth;
+}
+
+function render() {
+  mainEl.textContent = error ? 'Error' : tokens.length ? exprText(tokens) : '0';
+  let pv = '';
+  if (!error && tokens.some(isOp)) {
+    const v = evaluate(tokens);
+    if (isFinite(v)) pv = '= ' + fmtTok(toStr(v));
+  }
+  prevEl.textContent = pv;
+  fit();
+}
+
+function renderTape() {
+  tapeEl.textContent = '';
+  if (!history.length) {
+    const p = document.createElement('p');
+    p.className = 'empty';
+    p.textContent = 'No history yet';
+    tapeEl.append(p);
+    return;
+  }
+  const year = new Date().getFullYear();
+  let lastDay = '';
+  history.forEach((h, i) => {
+    const d = new Date(h.t), day = d.toDateString();
+    if (day !== lastDay) {
+      lastDay = day;
+      const el = document.createElement('div');
+      el.className = 'date';
+      el.textContent = d.toLocaleDateString(undefined,
+        { day: 'numeric', month: 'short', year: d.getFullYear() === year ? undefined : 'numeric' });
+      tapeEl.append(el);
+    }
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'entry';
+    b.dataset.i = i;
+    const r = document.createElement('b');
+    r.textContent = fmtTok(h.r);
+    b.append(h.e + '=', r);
+    b.setAttribute('aria-label', `${h.e} equals ${fmtTok(h.r)}. Tap to use result`);
+    tapeEl.append(b);
+  });
+  tapeEl.scrollTop = tapeEl.scrollHeight;
+}
+
+// Tap a past result to use it
+tapeEl.addEventListener('click', e => {
+  const b = e.target.closest('.entry');
+  if (!b) return;
+  if (e.detail) b.blur();
+  const h = history[+b.dataset.i];
+  if (!h) return;
+  resetIfError();
+  if (tokens.length && !isOp(last())) tokens[tokens.length - 1] = h.r; else tokens.push(h.r);
+  fresh = true;
+  render();
+});
+
+const actions = {
+  ac() { tokens = []; fresh = false; error = false; render(); },
+  neg: negate, pct: percent, back, eq: equals,
+  clear() {
+    if (!history.length || typeof dlg.showModal !== 'function') return;
+    dlg.returnValue = '';
+    dlg.showModal();
+  },
+  hist() { setTape(tapeEl.hidden); store.set('calc-tape', !tapeEl.hidden); }
+};
+
+function setTape(show) {
+  tapeEl.hidden = !show;
+  $('histBtn').setAttribute('aria-pressed', String(show));
+}
+
+dlg.addEventListener('close', () => {
+  if (dlg.returnValue !== 'ok') return;
+  history = [];
+  store.set('calc-history', history);
+  renderTape();
+});
+
+document.querySelector('.keys').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  if (e.detail) b.blur(); // tap/mouse: drop focus so Enter doesn't re-press this key
+  const k = b.dataset.k;
+  if (/^[\d.]$/.test(k)) digit(k);
+  else if (isOp(k)) op(k);
+  else actions[k]?.();
+});
+
+// Keyboard support
+addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey || dlg.open) return;
+  const k = e.key, map = { '*': '×', x: '×', '/': '÷', '-': '−', '+': '+' };
+  if (k === 'Enter' && document.activeElement?.matches('button:focus-visible')) return;
+  if (/^[\d.]$/.test(k)) digit(k);
+  else if (map[k]) op(map[k]);
+  else if (k === 'Enter' || k === '=') equals();
+  else if (k === 'Backspace') back();
+  else if (k === 'Escape' || k === 'Delete') actions.ac();
+  else if (k === '%') percent();
+  else return;
+  e.preventDefault();
+});
+
+// Lock the page like a native app: only the history list may scroll
+document.addEventListener('touchmove', e => {
+  if (!e.target.closest('.tape')) e.preventDefault();
+}, { passive: false });
+// No pinch-zoom on iOS
+document.addEventListener('gesturestart', e => e.preventDefault());
+
+addEventListener('resize', fit);
+setTape(store.get('calc-tape', true) !== false);
+renderTape();
+render();
+
+// Offline copy so it opens instantly from the home screen
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
