@@ -424,6 +424,16 @@ function fit() {
   mainEl.scrollTop = mainEl.scrollHeight;
 }
 
+// Jump to the newest history line. If a flick is still gliding, iOS keeps it going
+// after a jump, so briefly switch scrolling off to stop it first.
+function toBottom() {
+  const end = tapeEl.scrollHeight;
+  if (end - tapeEl.clientHeight - tapeEl.scrollTop <= 1) return;
+  tapeEl.style.overflowY = 'hidden';
+  tapeEl.scrollTop = end;
+  requestAnimationFrame(() => { tapeEl.style.overflowY = ''; tapeEl.scrollTop = tapeEl.scrollHeight; });
+}
+
 function render() {
   mainEl.textContent = error ? 'Error' : tokens.length ? exprText(tokens) : '0';
   let pv = '';
@@ -433,7 +443,7 @@ function render() {
   }
   prevEl.textContent = pv;
   fit();
-  tapeEl.scrollTop = tapeEl.scrollHeight;
+  toBottom();
 }
 
 // Full screen history: hide the keypad, history fills the screen
@@ -442,7 +452,7 @@ function setFull(on) {
   fsBtn.setAttribute('aria-pressed', String(on));
   fsBtn.querySelector('span').textContent = on ? 'Exit Full Screen' : 'Full Screen';
   if (!on) fit();
-  tapeEl.scrollTop = tapeEl.scrollHeight;
+  toBottom();
 }
 function syncFs() {
   fsBtn.hidden = tapeEl.hidden || !history.length;
@@ -514,7 +524,7 @@ function renderTape() {
     b.setAttribute('aria-label', `${h.e} equals ${fmtTok(h.r)}. Tap to use result`);
     tapeEl.append(b);
   });
-  tapeEl.scrollTop = tapeEl.scrollHeight;
+  toBottom();
 }
 
 function clearHistory() {
@@ -759,7 +769,6 @@ renderTape();
 render();
 // iOS settles the home screen layout after first paint (and again when reopened),
 // so keep the history pinned to the newest line whenever its box changes size.
-const toBottom = () => { tapeEl.scrollTop = tapeEl.scrollHeight; };
 new ResizeObserver(toBottom).observe(tapeEl);
 addEventListener('pageshow', toBottom);
 
