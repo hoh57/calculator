@@ -509,7 +509,7 @@ function recoverHistory() {
   store.set('calc-history', history);
   store.set('calc-trash', trash);
   renderTape();
-  tapeEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 450, easing: 'ease-out' }); // visual "it worked"
+  tapeEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 350, easing: 'ease-out' }); // visual "it worked"
 }
 
 // Tap a past result to use it (or the recover hint)
