@@ -16,7 +16,8 @@
 :root{--bg:#000;--num:#f2f2f2;--fn:#333;--op:#e3923b;--muted:#8e8e93;--txt:#fff}
 *{box-sizing:border-box;margin:0}
 html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif}
-body{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-area-inset-top) calc(env(safe-area-inset-right) + 10px) max(12px, calc(env(safe-area-inset-bottom) - 16px)) calc(env(safe-area-inset-left) + 10px);-webkit-user-select:none;user-select:none;touch-action:manipulation}
+body{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-area-inset-top) calc(env(safe-area-inset-right) + 10px) max(12px, calc(env(safe-area-inset-bottom) - 16px)) calc(env(safe-area-inset-left) + 10px);-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+@media (display-mode: standalone){html{overflow:visible}body{bottom:auto;height:100vh;padding-bottom:max(32px, env(safe-area-inset-bottom))}}
 .app{flex:1;display:flex;flex-direction:column;min-height:0;width:100%;max-width:480px;margin:0 auto}
 .screen{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-end;text-align:right}
 .tape{flex:0 1 auto;min-height:0;overflow-y:auto;padding:8px 0;font-size:clamp(18px,5.5vw,26px);overscroll-behavior:contain}
@@ -34,6 +35,10 @@ body{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-
 .app.full .tape{flex:1;display:flex;flex-direction:column}
 .app.full .tape>:first-child{margin-top:auto}
 .empty{color:var(--muted);font-size:16px;padding:12px 0}
+.recover{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:none;border:0;color:var(--muted);font-size:clamp(17px,5vw,22px);font-family:inherit;padding:12px 0;cursor:pointer}
+.recover svg{width:1.1em;height:1.1em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.recover:focus-visible{outline:3px solid #5ac8fa;outline-offset:2px}
+.hap{position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none}
 .preview{flex-shrink:0;color:var(--muted);font-size:clamp(20px,6vw,28px);min-height:1.3em;margin-top:6px;overflow:hidden;white-space:nowrap}
 .main{flex-shrink:0;font-weight:300;line-height:1.2;white-space:nowrap;overflow:hidden;padding-bottom:10px;max-height:calc(3.6em + 10px)}
 .main.wrap{white-space:normal;word-break:break-all}
@@ -47,13 +52,6 @@ body{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-
 .zero{grid-column:span 2}
 .eq{grid-column:5;grid-row:3/6}
 .k svg{width:40%;height:40%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-dialog{background:#1c1c1e;color:var(--txt);border:0;border-radius:16px;padding:20px;width:min(300px,85vw);text-align:center}
-dialog::backdrop{background:rgba(0,0,0,.6)}
-dialog p{font-size:17px;font-weight:600}
-dialog .sub{font-size:14px;font-weight:400;color:var(--muted);margin-top:6px}
-dialog .row{display:flex;gap:10px;margin-top:18px}
-dialog button{flex:1;padding:12px;border:0;border-radius:10px;font-size:16px;background:var(--fn);color:var(--txt);cursor:pointer}
-dialog .danger{background:#ff453a}
 </style>
 </head>
 <body>
@@ -94,18 +92,13 @@ dialog .danger{background:#ff453a}
   </div>
 </div>
 
-<dialog id="dlg">
-  <form method="dialog">
-    <p>Clear all history?</p>
-    <p class="sub">This can't be undone.</p>
-    <div class="row"><button value="cancel">Cancel</button><button value="ok" class="danger">Clear</button></div>
-  </form>
-</dialog>
+
+<label class="hap" aria-hidden="true"><input type="checkbox" switch tabindex="-1"></label>
 
 <script>
 const OPS = ['+', '−', '×', '÷'];
 const $ = id => document.getElementById(id);
-const mainEl = $('main'), prevEl = $('preview'), tapeEl = $('tape'), dlg = $('dlg');
+const mainEl = $('main'), prevEl = $('preview'), tapeEl = $('tape');
 const appEl = document.querySelector('.app'), fsBtn = $('fsBtn');
 
 // Saved history stays in this browser only; works without storage too.
@@ -113,10 +106,11 @@ const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
 };
-let history = store.get('calc-history', []);
-if (!Array.isArray(history)) history = [];
-history = history.filter(h => h && typeof h.e === 'string' && typeof h.r === 'string'
-  && typeof h.t === 'number' && isFinite(parseFloat(h.r)));
+const isEntry = h => h && typeof h.e === 'string' && typeof h.r === 'string'
+  && typeof h.t === 'number' && isFinite(parseFloat(h.r));
+const loadList = k => { const v = store.get(k, []); return Array.isArray(v) ? v.filter(isEntry) : []; };
+let history = loadList('calc-history');
+let trash = loadList('calc-trash'); // last cleared history, so it can be recovered
 
 let tokens = [];   // e.g. ['12.5', '+', '3']
 let fresh = false; // last number is a result: typing a digit replaces it
@@ -273,10 +267,19 @@ function renderTape() {
   tapeEl.textContent = '';
   syncFs();
   if (!history.length) {
-    const p = document.createElement('p');
-    p.className = 'empty';
-    p.textContent = 'No history yet';
-    tapeEl.append(p);
+    if (trash.length) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'recover';
+      b.setAttribute('aria-label', 'Recover cleared history');
+      b.innerHTML = 'Long Press <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg> Recover History';
+      tapeEl.append(b);
+    } else {
+      const p = document.createElement('p');
+      p.className = 'empty';
+      p.textContent = 'No history yet';
+      tapeEl.append(p);
+    }
     return;
   }
   const year = new Date().getFullYear();
@@ -304,8 +307,26 @@ function renderTape() {
   tapeEl.scrollTop = tapeEl.scrollHeight;
 }
 
-// Tap a past result to use it
+function clearHistory() {
+  if (!history.length) return;
+  trash = history;
+  history = [];
+  store.set('calc-trash', trash);
+  store.set('calc-history', history);
+  renderTape();
+}
+function recoverHistory() {
+  if (!trash.length) return;
+  history = trash.concat(history).slice(-500);
+  trash = [];
+  store.set('calc-history', history);
+  store.set('calc-trash', trash);
+  renderTape();
+}
+
+// Tap a past result to use it (or the recover hint)
 tapeEl.addEventListener('click', e => {
+  if (e.target.closest('.recover')) { haptic(); return recoverHistory(); }
   const b = e.target.closest('.entry');
   if (!b) return;
   if (e.detail) b.blur();
@@ -321,11 +342,7 @@ tapeEl.addEventListener('click', e => {
 const actions = {
   ac() { tokens = []; fresh = false; error = false; render(); },
   neg: negate, pct: percent, back, eq: equals,
-  clear() {
-    if (!history.length || typeof dlg.showModal !== 'function') return;
-    dlg.returnValue = '';
-    dlg.showModal();
-  },
+  clear: clearHistory,
   hist() { setTape(tapeEl.hidden); store.set('calc-tape', !tapeEl.hidden); }
 };
 
@@ -335,18 +352,31 @@ function setTape(show) {
   syncFs();
 }
 
-dlg.addEventListener('close', () => {
-  if (dlg.returnValue !== 'ok') return;
-  history = [];
-  store.set('calc-history', history);
-  renderTape();
+// Long press the trash key to recover the last cleared history
+const trashBtn = document.querySelector('[data-k="clear"]');
+let pressTimer = 0, longFired = false;
+trashBtn.addEventListener('pointerdown', () => {
+  longFired = false;
+  clearTimeout(pressTimer);
+  pressTimer = setTimeout(() => { longFired = true; recoverHistory(); }, 500);
 });
+['pointerup', 'pointerleave', 'pointercancel'].forEach(t =>
+  trashBtn.addEventListener(t, () => clearTimeout(pressTimer)));
+trashBtn.addEventListener('contextmenu', e => e.preventDefault());
+
+// Haptic tick: Android vibrates; iPhone (iOS 18+) ticks via a hidden system switch
+const hapEl = document.querySelector('.hap');
+function haptic() {
+  if (navigator.vibrate) navigator.vibrate(8); else hapEl.click();
+}
 
 document.querySelector('.keys').addEventListener('click', e => {
   const b = e.target.closest('button');
   if (!b) return;
   if (e.detail) b.blur(); // tap/mouse: drop focus so Enter doesn't re-press this key
   const k = b.dataset.k;
+  if (k === 'clear' && longFired) { longFired = false; return; }
+  haptic();
   if (/^[\d.]$/.test(k)) digit(k);
   else if (isOp(k)) op(k);
   else actions[k]?.();
@@ -354,7 +384,7 @@ document.querySelector('.keys').addEventListener('click', e => {
 
 // Keyboard support
 addEventListener('keydown', e => {
-  if (e.ctrlKey || e.metaKey || e.altKey || dlg.open) return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
   const k = e.key, map = { '*': '×', x: '×', '/': '÷', '-': '−', '+': '+' };
   if (k === 'Enter' && document.activeElement?.matches('button:focus-visible')) return;
   if (appEl.classList.contains('full') && /^[\d.%=+\-*\/x]$|^(Enter|Backspace|Escape|Delete)$/.test(k)) setFull(false);
