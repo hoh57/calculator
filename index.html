@@ -339,7 +339,7 @@ tapeEl.addEventListener('click', e => {
 const actions = {
   ac() { tokens = []; fresh = false; error = false; render(); },
   neg: negate, pct: percent, back, eq: equals,
-  clear: clearHistory,
+  clear() { this.ac(); clearHistory(); },
   hist() { setTape(tapeEl.hidden); store.set('calc-tape', !tapeEl.hidden); }
 };
 
@@ -361,19 +361,8 @@ trashBtn.addEventListener('pointerdown', () => {
   trashBtn.addEventListener(t, () => clearTimeout(pressTimer)));
 trashBtn.addEventListener('contextmenu', e => e.preventDefault());
 
-// Haptic tick: Android vibrates; iPhone (iOS 18+) ticks via a hidden system switch
-function haptic() {
-  if (navigator.vibrate) return navigator.vibrate(8);
-  const label = document.createElement('label'), input = document.createElement('input');
-  input.type = 'checkbox';
-  input.setAttribute('switch', '');
-  label.setAttribute('aria-hidden', 'true');
-  label.style.display = input.style.display = 'none';
-  label.append(input);
-  document.head.append(label);
-  label.click();
-  label.remove();
-}
+// Haptic tick where the browser allows it (Android; iPhone web apps can't)
+function haptic() { navigator.vibrate?.(8); }
 
 document.querySelector('.keys').addEventListener('click', e => {
   const b = e.target.closest('button');
