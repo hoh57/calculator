@@ -84,8 +84,23 @@ No build step and no libraries — it is plain HTML, CSS and JavaScript.
 ## Making changes
 
 1. Edit the files and push to `main`. GitHub Pages serves the repo root.
-2. **Bump `CACHE` in `sw.js`** (e.g. `calc-v27` → `calc-v28`), set the same number on the **Version** line in Settings (`index.html`), and add a line to `CHANGELOG.md` on every push that changes the app.
+2. On every push that changes the app, pick the new version number (see *Versioning* below) and put it in **three places**:
+   - `CACHE` in `sw.js` (e.g. `calc-1.0.0` → `calc-1.1.0`)
+   - the **Version** line in Settings (`index.html`)
+   - a new section at the top of `CHANGELOG.md` on every push that changes the app.
    Phones show the new version on the **second** open after the push (the first open quietly downloads it).
+
+### Versioning
+The version has three numbers, **MAJOR.MINOR.PATCH** (e.g. `1.2.3`):
+
+| Change | Bump | Example |
+|---|---|---|
+| Big change to how the app looks or works (a redesign, removing a feature) | MAJOR, reset the others | 1.4.2 → 2.0.0 |
+| New feature or new setting (a theme, a new key, the version line) | MINOR, reset PATCH | 1.4.2 → 1.5.0 |
+| Fix or small tweak to something that already exists (a bug, a timing, a colour) | PATCH | 1.4.2 → 1.4.3 |
+
+- Several changes in one push: use the biggest one.
+- Docs-only pushes (README, CHANGELOG) don't change the version or the cache.
 
 To test on a computer, serve the folder locally (a service worker needs http, not `file://`):
 
