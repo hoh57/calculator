@@ -1,6 +1,6 @@
 # Calculator
 
-A Calculator+-style calculator for iPhone, built as a home screen web app.
+A clean, simple calculator for iPhone, built as a home screen web app.
 No App Store, no account, no tracking — just open it in Safari and add it to your home screen.
 
 **▶ Live app:** https://hoh57.github.io/calculator/
@@ -17,12 +17,12 @@ No App Store, no account, no tracking — just open it in Safari and add it to y
 
 ### Keypad
 - AC, +/−, %, ← (backspace), ⠿ (scientific), 🗑 (clear), ≡ (settings), tall =
-- Keys grow and lighten while pressed, like Calculator+
+- Keys grow and lighten while pressed
 - × and ÷ are done before + and −
 - No floating-point junk: `0.1 + 0.2 = 0.3`
 
 ### Percent (%)
-The % stays on screen and in the history, the same as Calculator+.
+The % stays on screen and in the history (e.g. `100−6% = 94`).
 
 | You type   | Result | Why                         |
 |------------|--------|-----------------------------|
