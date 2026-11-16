@@ -77,6 +77,14 @@ body{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-
 .recover{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:none;border:0;color:var(--muted);font-size:clamp(17px,5vw,22px);font-family:inherit;padding:12px 0;cursor:pointer}
 .recover svg{width:1.1em;height:1.1em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .recover:focus-visible{outline:3px solid #5ac8fa;outline-offset:2px}
+.clip{position:absolute;right:0;z-index:4;display:flex;border-radius:999px;background:linear-gradient(var(--pill),var(--pill)) var(--bg);overflow:hidden;font-size:17px}
+.clip[hidden]{display:none}
+.clip button{border:0;background:none;color:var(--txt);font:inherit;padding:10px 18px;cursor:pointer}
+.clip button+button{border-left:1px solid var(--line)}
+.clip button:disabled{color:var(--muted)}
+.clip button:focus-visible{outline:3px solid #5ac8fa;outline-offset:-3px}
+.clip span{padding:10px 18px}
+.clip span:empty{display:none}
 
 .preview{flex-shrink:0;color:var(--muted);font-size:clamp(20px,6vw,28px);min-height:1.3em;margin-top:6px;overflow:hidden;white-space:nowrap}
 .main{flex-shrink:0;font-weight:300;line-height:1.2;white-space:nowrap;overflow:hidden;padding-bottom:10px;max-height:calc(3.6em + 10px)}
@@ -123,6 +131,7 @@ try { const c = JSON.parse(localStorage.getItem('calc-settings') || '{}') || {};
     <div class="tape" id="tape" aria-label="History"></div>
     <div class="sbar" id="sbar" aria-hidden="true"></div>
     <div class="preview" id="preview" aria-hidden="true"></div>
+    <div class="clip" id="clip" hidden><button type="button" id="clipCopy">Copy</button><button type="button" id="clipPaste">Paste</button><span id="clipMsg" role="status"></span></div>
     <div class="main" id="main" role="status" aria-live="polite">0</div>
   </div>
   <div class="keys">
@@ -169,7 +178,7 @@ try { const c = JSON.parse(localStorage.getItem('calc-settings') || '{}') || {};
       <button type="button" class="row" id="openDp" aria-describedby="dpVal">Decimal Places <span class="val"><span id="dpVal">Unlimited</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button>
     </div>
     <div class="group">
-      <div class="row ver">Version <span class="val">1.0.1</span></div>
+      <div class="row ver">Version <span class="val">1.1.0</span></div>
     </div>
   </div>
   <div class="view" id="setDp" hidden>
@@ -213,7 +222,7 @@ const settings = {
 };
 // Answer as text, rounded to the chosen decimal places
 function result(v) {
-  if (settings.dp === 'auto') return toStr(v);
+  if (settings.dp === 'auto' || Math.abs(v) >= 1e16) return toStr(v);
   const s = clean(v).toFixed(+settings.dp);
   return /^-0(\.0+)?$/.test(s) ? s.slice(1) : s;
 }
@@ -235,7 +244,8 @@ const last = () => tokens[tokens.length - 1];
 const preEnd = a => a.at(-1) === '%' && (a.length < 2 || isOp(a.at(-2)) || isOpen(a.at(-2)));
 const dangling = a => isOp(a.at(-1)) || isOpen(a.at(-1)) || preEnd(a);
 const clean = n => { const r = parseFloat(n.toPrecision(15)); return Object.is(r, -0) ? 0 : r; };
-const toStr = n => String(clean(n));
+// Past 16 digits a number is shown short, like 1.5e21 (the digits after that aren't exact anyway)
+const toStr = n => { const r = clean(n); return Math.abs(r) >= 1e16 ? r.toExponential().replace('+', '') : String(r); };
 const isLit = t => /^-?[\d.]/.test(t);           // a typed number or an answer
 const isConst = t => /^-?[πe]$/.test(t);
 const isNum = t => t !== undefined && (isLit(t) || isConst(t));
@@ -466,6 +476,9 @@ function equals() {
 
 // Full size until the line is full, then shrink just enough to fit; below the minimum, wrap.
 function fit() {
+  prevEl.style.fontSize = ''; // the small "= answer" line shrinks too, so its last digits are never cut off
+  const pr = prevEl.clientWidth / prevEl.scrollWidth;
+  if (pr < 1) prevEl.style.fontSize = Math.floor(parseFloat(getComputedStyle(prevEl).fontSize) * pr) + 'px';
   const max = Math.min(80, innerWidth * 0.2), min = Math.max(40, max * 0.7);
   mainEl.classList.remove('wrap');
   mainEl.style.fontSize = max + 'px';
@@ -607,13 +620,16 @@ tapeEl.addEventListener('click', e => {
   if (!b) return;
   if (e.detail) b.blur();
   const h = history[+b.dataset.i];
-  if (!h) return;
+  if (h) useNum(h.r);
+});
+// Put a ready-made number (a past answer or a pasted one) into the sum
+function useNum(r) {
   resetIfError();
-  if (isNum(last())) tokens[tokens.length - 1] = h.r; else tokens.push(h.r);
+  if (isNum(last())) tokens[tokens.length - 1] = r; else tokens.push(r);
   fresh = true;
   if (appEl.classList.contains('full')) setFull(false);
   render();
-});
+}
 
 const actions = {
   ac() { tokens = []; fresh = false; error = false; render(); },
@@ -814,6 +830,64 @@ $('modeBack').addEventListener('click', () => showView(false));
 $('openTheme').addEventListener('click', () => showView('Theme'));
 $('themeBack').addEventListener('click', () => showView(false));
 
+// ---- Copy / Paste: long press the number (or Ctrl/Cmd+C, Ctrl/Cmd+V on a keyboard) ----
+const clipEl = $('clip');
+// Copy gives the answer if there is a sum, else the number on screen. No thousands commas, so it pastes anywhere.
+function copyText() {
+  if (error) return '';
+  if (!needsCalc()) return (tokens[0] || '0').replace(/\.$/, '');
+  const v = evaluate(tokens);
+  return isFinite(v) ? result(v) : '';
+}
+// Pasted text → a number, or '' if it isn't one. Accepts "1,234.50", "RM 99", "$5", "−3".
+function parseNum(s) {
+  s = String(s).trim().slice(0, 60).replace(/[,\s]/g, '').replace('−', '-').replace(/^(-?)(?:[a-z]{1,3}|[$€£¥])/i, '$1');
+  if (!/^-?(\d+\.?\d*|\.\d+)(e[+-]?\d+)?$/i.test(s)) return '';
+  const v = parseFloat(s);
+  return isFinite(v) ? toStr(v) : '';
+}
+let clipHide = 0, clipPress = 0;
+function showClip(msg = '') { // the Copy | Paste pill, or a short message that fades by itself
+  clearTimeout(clipHide);
+  $('clipCopy').hidden = $('clipPaste').hidden = !!msg;
+  $('clipCopy').disabled = !copyText();
+  $('clipMsg').textContent = msg;
+  clipEl.style.bottom = clipEl.parentElement.clientHeight - prevEl.offsetTop + 4 + 'px';
+  clipEl.hidden = false;
+  if (msg) clipHide = setTimeout(() => { clipEl.hidden = true; }, 1200);
+}
+function pasteNum(s) {
+  const n = parseNum(s);
+  if (!n) return showClip('No number to paste');
+  clipEl.hidden = true;
+  useNum(n);
+}
+[mainEl, prevEl].forEach(el => {
+  el.addEventListener('pointerdown', () => {
+    clearTimeout(clipPress);
+    if (navigator.clipboard) clipPress = setTimeout(showClip, 500);
+  });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => el.addEventListener(t, () => clearTimeout(clipPress)));
+  el.addEventListener('contextmenu', e => e.preventDefault());
+});
+addEventListener('pointerdown', e => { if (!clipEl.contains(e.target)) clipEl.hidden = true; }, true);
+$('clipCopy').addEventListener('click', () =>
+  navigator.clipboard.writeText(copyText()).then(() => showClip('Copied'), () => showClip("Couldn't copy")));
+$('clipPaste').addEventListener('click', () =>
+  navigator.clipboard.readText().then(pasteNum, () => showClip("Couldn't paste")));
+document.addEventListener('copy', e => {
+  const t = copyText();
+  if (!t || setDlg.open) return;
+  e.clipboardData.setData('text/plain', t);
+  e.preventDefault();
+  showClip('Copied');
+});
+document.addEventListener('paste', e => {
+  if (setDlg.open) return;
+  e.preventDefault();
+  pasteNum(e.clipboardData.getData('text/plain'));
+});
+
 // Long press the trash key to recover the last cleared history
 const trashBtn = document.querySelector('[data-k="clear"]').parentElement;
 let pressTimer = 0, longFired = false;
@@ -899,8 +973,22 @@ render();
 new ResizeObserver(toBottom).observe(tapeEl);
 addEventListener('pageshow', toBottom);
 
-// Offline copy so it opens instantly from the home screen
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+// Offline copy so it opens instantly from the home screen. A new version shows on the same open:
+// the page reloads as soon as it is ready if no key was pressed yet, otherwise when the app is next
+// put away. The sum being typed is saved on every key, so a reload loses nothing.
+if ('serviceWorker' in navigator) {
+  const sw = navigator.serviceWorker;
+  let used = false;
+  ['pointerdown', 'keydown'].forEach(t => addEventListener(t, () => { used = true; }, true));
+  if (sw.controller) sw.addEventListener('controllerchange', () => {
+    if (!used) location.reload();
+    else document.addEventListener('visibilitychange', () => { if (document.hidden) location.reload(); });
+  });
+  // An app left open in the background never reloads by itself, so look for an update each time it comes back
+  sw.register('sw.js').then(reg => document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) reg.update().catch(() => {});
+  })).catch(() => {});
+}
 </script>
 </body>
 </html>

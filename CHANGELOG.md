@@ -1,6 +1,12 @@
 # What's new
 
-The version is shown on the last line of Settings. How the numbers work: see *Versioning* in the README. Phones get a new version on the second open after it is pushed.
+The version is shown on the last line of Settings. How the numbers work: see *Versioning* in the README. Phones get a new version the first time the app is opened after it is pushed (a few seconds after opening).
+
+## 1.1.0
+- **Copy and Paste:** long press the number to copy the answer or paste a number in. Copied numbers have no thousands commas, so they paste into any app. Pasting accepts things like `1,234.50` or `RM 99`. On a keyboard, Ctrl/Cmd+C and Ctrl/Cmd+V work too.
+- **Very long numbers:** answers past 16 digits are shown short, like `1.5e21`, and the small "= answer" line shrinks to fit instead of being cut off.
+- **Faster updates:** a new version now shows on the first open instead of the second. (This update itself still needs two opens, because the old version does the fetching.)
+- Maths tests (`test.js`) now run on GitHub on every push, and a version is only released if they pass.
 
 ## 1.0.1
 - Better page title and description, so search engines and shared links show what the app is.

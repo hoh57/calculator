@@ -20,6 +20,14 @@ No App Store, no account, no tracking — just open it in Safari and add it to y
 - Keys grow and lighten while pressed
 - × and ÷ are done before + and −
 - No floating-point junk: `0.1 + 0.2 = 0.3`
+- Very long answers never get cut off: the text shrinks to fit, and past 16 digits the answer is shown short, like `1.5e21`
+
+### Copy and Paste
+- **Long-press the number** to get Copy | Paste
+- Copy gives the answer (or the number on screen) without thousands commas, so it pastes into any app
+- Paste accepts a number such as `1,234.50`, `RM 99` or `$5`; anything else is refused with "No number to paste"
+- iPhone shows its own small "Paste" bubble to confirm; that comes from iOS and can't be skipped
+- With a keyboard: Ctrl/Cmd+C and Ctrl/Cmd+V
 
 ### Percent (%)
 The % stays on screen and in the history (e.g. `100−6% = 94`).
@@ -79,6 +87,7 @@ See [CHANGELOG.md](CHANGELOG.md).
 | `manifest.webmanifest` | App name, colours and icons for "Add to Home Screen" |
 | `icon-*.png`           | App icons (180 for iPhone, 192/512 for others)       |
 | `sitemap.xml`          | Tells search engines (Google Search Console) the page address |
+| `test.js`              | Maths tests — presses the real keys and checks the answers (`node test.js`) |
 
 No build step and no libraries — it is plain HTML, CSS and JavaScript.
 
@@ -90,10 +99,15 @@ No build step and no libraries — it is plain HTML, CSS and JavaScript.
    - the **Version** line in Settings (`index.html`)
    - a new section at the top of `CHANGELOG.md`
 
-   Phones show the new version on the **second** open after the push (the first open quietly downloads it).
+   Phones show the new version on the **first** open after the push: the app downloads it in the background and
+   reloads itself after a few seconds (straight away if no key was pressed yet, otherwise when the app is next put away).
+   The sum being typed is saved, so the reload loses nothing.
 3. The release is automatic: when `sw.js` gets a new version, a GitHub Action
    (`.github/workflows/release.yml`) creates tag `v1.2.3` and release `1.2.3` with that version's CHANGELOG notes,
    and the repo page shows it as *Latest*. So write the CHANGELOG section **before** or in the same push.
+4. Run `node test.js` before pushing (no install needed). GitHub runs it too on every push
+   (`.github/workflows/test.yml`), and a version is not released if a check fails. When you change how a key
+   works, add a line for it in `test.js`.
 
 ### Versioning
 The version has three numbers, **MAJOR.MINOR.PATCH** (e.g. `1.2.3`):
