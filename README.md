@@ -25,6 +25,7 @@ No App Store, no account, no tracking — just open it in Safari and add it to y
 ### Copy and Paste
 - **Long-press the number** to get Copy | Paste
 - Copy gives the answer (or the number on screen) without thousands commas, so it pastes into any app
+- **Long-press a history line** to get Copy answer | Copy sum (the whole line, e.g. `422−6%=396.68`); a normal tap still reuses the answer
 - Paste accepts a number such as `1,234.50`, `RM 99` or `$5`; anything else is refused with "No number to paste"
 - iPhone shows its own small "Paste" bubble to confirm; that comes from iOS and can't be skipped
 - With a keyboard: Ctrl/Cmd+C and Ctrl/Cmd+V

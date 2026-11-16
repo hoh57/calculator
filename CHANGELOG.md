@@ -2,6 +2,9 @@
 
 The version is shown on the last line of Settings. How the numbers work: see *Versioning* in the README. Phones get a new version the first time the app is opened after it is pushed (a few seconds after opening).
 
+## 1.2.0
+- **Copy from history:** long press a history line for **Copy answer** (e.g. `396.68`, no commas) or **Copy sum** (the whole line, e.g. `422−6%=396.68`). The sum you are typing is not touched. A normal tap still reuses the answer.
+
 ## 1.1.1
 - **VoiceOver (screen reader):** the scientific keys are now read by name ("square root", "inverse sine", "to the power of") instead of bare symbols, the ⠿ key says whether the panel is open, and there is a "Copy or paste" button next to the number for people who can't long press. Nothing changes on screen.
 

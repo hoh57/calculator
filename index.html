@@ -180,7 +180,7 @@ try { const c = JSON.parse(localStorage.getItem('calc-settings') || '{}') || {};
       <button type="button" class="row" id="openDp" aria-describedby="dpVal">Decimal Places <span class="val"><span id="dpVal">Unlimited</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button>
     </div>
     <div class="group">
-      <div class="row ver">Version <span class="val">1.1.1</span></div>
+      <div class="row ver">Version <span class="val">1.2.0</span></div>
     </div>
   </div>
   <div class="view" id="setDp" hidden>
@@ -618,6 +618,7 @@ function recoverHistory() {
 // Tap a past result to use it (or the recover hint)
 tapeEl.addEventListener('click', e => {
   if (e.target.closest('.recover')) { haptic(); return recoverHistory(); }
+  if (lineLong) { lineLong = false; return; } // that was a long press (copy), not a tap
   const b = e.target.closest('.entry');
   if (!b) return;
   if (e.detail) b.blur();
@@ -860,22 +861,46 @@ function parseNum(s) {
   const v = parseFloat(s);
   return isFinite(v) ? toStr(v) : '';
 }
-let clipHide = 0, clipPress = 0;
-function showClip(msg = '') { // the Copy | Paste pill, or a short message that fades by itself
+let clipHide = 0, clipPress = 0, clipLine = null; // clipLine: the history line the pill is for (null = the number)
+const hideClip = () => { clipEl.hidden = true; clipLine = null; };
+// The pill: Copy | Paste for the number, Copy answer | Copy sum for a history line, or a short message that fades by itself
+function showClip(msg = '', line = null) {
   clearTimeout(clipHide);
+  if (!msg) clipLine = line;
   $('clipCopy').hidden = $('clipPaste').hidden = !!msg;
-  $('clipCopy').disabled = !copyText();
+  $('clipCopy').textContent = clipLine ? 'Copy answer' : 'Copy';
+  $('clipPaste').textContent = clipLine ? 'Copy sum' : 'Paste';
+  $('clipCopy').disabled = !clipLine && !copyText();
   $('clipMsg').textContent = msg;
-  clipEl.style.bottom = clipEl.parentElement.clientHeight - prevEl.offsetTop + 4 + 'px';
+  const box = clipEl.parentElement, top = (clipLine || prevEl).getBoundingClientRect().top - box.getBoundingClientRect().top;
+  clipEl.style.bottom = Math.min(box.clientHeight - top + 4, box.clientHeight - 48) + 'px'; // just above it, never off the top
   clipEl.hidden = false;
-  if (msg) clipHide = setTimeout(() => { clipEl.hidden = true; }, 1200);
+  if (msg) clipHide = setTimeout(hideClip, 1200);
 }
 function pasteNum(s) {
   const n = parseNum(s);
   if (!n) return showClip('No number to paste');
-  clipEl.hidden = true;
+  hideClip();
   useNum(n);
 }
+const clipWrite = t => navigator.clipboard.writeText(t).then(() => showClip('Copied'), () => showClip("Couldn't copy"));
+const lineOf = () => clipLine && history[+clipLine.dataset.i];
+// History lines: long press (or right click / menu key) → Copy answer | Copy sum. A normal tap still reuses the answer.
+let lineLong = false;
+tapeEl.addEventListener('pointerdown', e => {
+  lineLong = false;
+  clearTimeout(clipPress);
+  const b = e.target.closest('.entry');
+  if (b && e.button === 0 && navigator.clipboard) clipPress = setTimeout(() => { lineLong = true; showClip('', b); }, 500);
+});
+['pointerup', 'pointercancel', 'pointerleave', 'scroll'].forEach(t => tapeEl.addEventListener(t, () => clearTimeout(clipPress)));
+tapeEl.addEventListener('contextmenu', e => {
+  e.preventDefault();
+  const b = e.target.closest('.entry');
+  if (!b || !navigator.clipboard) return;
+  showClip('', b);
+  if (usingKeyboard) $('clipCopy').focus();
+});
 [mainEl, prevEl].forEach(el => {
   el.addEventListener('pointerdown', () => {
     clearTimeout(clipPress);
@@ -884,13 +909,15 @@ function pasteNum(s) {
   ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => el.addEventListener(t, () => clearTimeout(clipPress)));
   el.addEventListener('contextmenu', e => e.preventDefault());
 });
-addEventListener('pointerdown', e => { if (!clipEl.contains(e.target)) clipEl.hidden = true; }, true);
+addEventListener('pointerdown', e => { if (!clipEl.contains(e.target)) hideClip(); }, true);
 // Screen readers can't long press, so they get a hidden "Copy or paste" button next to the number
 $('clipOpen').addEventListener('click', () => { if (navigator.clipboard) { showClip(); $('clipCopy').disabled ? $('clipPaste').focus() : $('clipCopy').focus(); } });
-$('clipCopy').addEventListener('click', () =>
-  navigator.clipboard.writeText(copyText()).then(() => showClip('Copied'), () => showClip("Couldn't copy")));
-$('clipPaste').addEventListener('click', () =>
-  navigator.clipboard.readText().then(pasteNum, () => showClip("Couldn't paste")));
+$('clipCopy').addEventListener('click', () => { const h = lineOf(); clipWrite(clipLine ? (h ? h.r : '') : copyText()); });
+$('clipPaste').addEventListener('click', () => {
+  const h = lineOf();
+  if (clipLine) clipWrite(h ? h.e + '=' + fmtTok(h.r) : '');
+  else navigator.clipboard.readText().then(pasteNum, () => showClip("Couldn't paste"));
+});
 document.addEventListener('copy', e => {
   const t = copyText();
   if (!t || setDlg.open) return;
