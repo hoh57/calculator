@@ -29,6 +29,10 @@ No App Store, no account, no tracking — just open it in Safari and add it to y
 - iPhone shows its own small "Paste" bubble to confirm; that comes from iOS and can't be skipped
 - With a keyboard: Ctrl/Cmd+C and Ctrl/Cmd+V
 
+### Screen reader (VoiceOver)
+- Every key is read by name, including the scientific ones ("square root", "inverse sine")
+- A "Copy or paste" button sits next to the number, since a long press isn't possible with VoiceOver
+
 ### Percent (%)
 The % stays on screen and in the history (e.g. `100−6% = 94`).
 

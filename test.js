@@ -99,6 +99,11 @@ for (const [text, want] of [['1,234.50', '1234.5'], ['RM 99', '99'], [' $5 ', '5
 }
 c.type('7+'); c.pasteNum('1,000'); assert.strictEqual(c.copyText(), '1007'); n++;
 
+// Every scientific key has a spoken name for screen readers
+for (const [k1, , k2] of vm.runInContext('SCI', c)) for (const k of [k1, k2]) {
+  if (k && k !== 'rad') { assert.ok(vm.runInContext('SAY', c)[k], 'no spoken name for ' + k); n++; }
+}
+
 // Decimal Places setting
 const d = load({ 'calc-settings': { dp: '2' } });
 check(d, '10÷4=', '2.50');

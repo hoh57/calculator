@@ -2,6 +2,9 @@
 
 The version is shown on the last line of Settings. How the numbers work: see *Versioning* in the README. Phones get a new version the first time the app is opened after it is pushed (a few seconds after opening).
 
+## 1.1.1
+- **VoiceOver (screen reader):** the scientific keys are now read by name ("square root", "inverse sine", "to the power of") instead of bare symbols, the ⠿ key says whether the panel is open, and there is a "Copy or paste" button next to the number for people who can't long press. Nothing changes on screen.
+
 ## 1.1.0
 - **Copy and Paste:** long press the number to copy the answer or paste a number in. Copied numbers have no thousands commas, so they paste into any app. Pasting accepts things like `1,234.50` or `RM 99`. On a keyboard, Ctrl/Cmd+C and Ctrl/Cmd+V work too.
 - **Very long numbers:** answers past 16 digits are shown short, like `1.5e21`, and the small "= answer" line shrinks to fit instead of being cut off.
